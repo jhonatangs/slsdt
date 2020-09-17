@@ -35,7 +35,7 @@ class SAODT:
 
     def __init__(
         self,
-        criterion="gini",
+        criterion="entropy",
         max_depth=None,
         max_samples=10000,
         initial_temperature=0.4,
