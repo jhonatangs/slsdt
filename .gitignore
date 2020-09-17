@@ -1,1 +1,4 @@
 .venv
+odt/test.py
+odt/__pycache__
+odt/test_performance.py

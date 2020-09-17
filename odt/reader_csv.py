@@ -2,8 +2,7 @@ from typing import Tuple
 
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import OneHotEncoder, LabelEncoder
-from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import LabelEncoder
 
 
 def read_csv(file: str, class_index: str) -> Tuple[np.ndarray, np.ndarray]:
@@ -21,22 +20,13 @@ def read_csv(file: str, class_index: str) -> Tuple[np.ndarray, np.ndarray]:
     """
     df = pd.read_csv(file)
 
+    for column in df.columns:
+        if df[column].dtype == object:
+            encoder = LabelEncoder()
+            df[column] = encoder.fit_transform(df[column])
+
+
     data = np.ascontiguousarray(df.drop([class_index], axis=1, inplace=False).values)
     classes = np.ascontiguousarray(df[class_index].values)
-
-    data_num_columns = data.shape[1]
-    data_indexs_str = [
-        i for i in range(data_num_columns) if isinstance(data[0, i], str)
-    ]
-    column_transformer_data = ColumnTransformer(
-        [("encoder", OneHotEncoder(), data_indexs_str)], remainder="passthrough"
-    )
-    try:
-        data = column_transformer_data.fit_transform(data).toarray()
-    except AttributeError:
-        data = column_transformer_data.fit_transform(data)
-
-    label_encoder_classes = LabelEncoder()
-    classes = label_encoder_classes.fit_transform(classes)
 
     return np.array(data, np.float64), np.array(classes, np.int)
