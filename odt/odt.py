@@ -20,6 +20,7 @@ class Movement:
     RESET = 4
     DOUBLE_HALF = 5
     MATHEMATICAL = 6
+    JUMP = 7
 
 
 class Node:
@@ -57,7 +58,8 @@ class ODT:
         max_iterations=200000,
         l=10,
         unique_increase=0.6,
-        multiple_increase=0.15,
+        multiple_increase=0.1,
+        jump=0.5,
         swap=0.5,
         reset=0.1,
         double_half=0.5,
@@ -75,6 +77,7 @@ class ODT:
         self.l = l
         self.unique_increase = unique_increase
         self.multiple_increase = multiple_increase
+        self.jump = jump
         self.swap = swap
         self.reset = reset
         self.double_half = double_half
@@ -102,6 +105,7 @@ class ODT:
             "reset": self.reset,
             "double_half": self.double_half,
             "mathematical": self.mathematical,
+            "jump": self.jump,
         }
 
     def set_params(self, **parametes):
@@ -198,8 +202,10 @@ class ODT:
             return self.percentage_movements[3][0]
         elif x <= self.percentages_transform[4]:
             return self.percentage_movements[4][0]
-        else:
+        elif x <= self.percentages_transform[5]:
             return self.percentage_movements[5][0]
+        else:
+            return self.percentage_movements[6][0]
 
     def __make_movement(self, weights, movement):
         """makes a movement in weights, generating a neighbor
@@ -219,7 +225,7 @@ class ODT:
                 0
             ]
 
-            if self.rng.random() <= 0.25:
+            if self.rng.random() <= 0.3:
                 value_increase = (1.01 - -1) * self.rng.random() - 1
             else:
                 value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
@@ -247,7 +253,7 @@ class ODT:
             for column_modified in columns_modified:
                 # value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
 
-                if self.rng.random() <= 0.25:
+                if self.rng.random() <= 0.3:
                     value_increase = (1.01 - -1) * self.rng.random() - 1
                 else:
                     value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
@@ -292,6 +298,19 @@ class ODT:
                 weights_neighbor[column_modified] = (
                     weights_neighbor[column_modified] / 2
                 )
+
+        elif movement == Movement.JUMP:
+            mov = self.rng.integers(1, 3, size=1)[0]
+
+            for column_modified in weights_neighbor.shape[0] - 1:
+                if mov == 1:
+                    weights_neighbor[column_modified] = (
+                        weights_neighbor[column_modified] * 2
+                    )
+                else:
+                    weights_neighbor[column_modified] = (
+                        weights_neighbor[column_modified] / 2
+                    )
 
         else:
             functions = [np.square, np.sqrt, np.log, np.exp]
@@ -360,7 +379,7 @@ class ODT:
 
             if cost_neighbor >= cost or cost_neighbor >= costs[v]:
                 # if cost_neighbor > cost:
-                #   iteration = 0
+                #    iteration = 0
 
                 weights = np.copy(weights_neighbor)
                 cost = np.copy(cost_neighbor)

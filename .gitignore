@@ -4,6 +4,6 @@ odt/__pycache__
 odt/.mypy_cache
 odt/test.py
 odt/test_performance.py
-odt/BOHB4HPO_dt.py
-odt/SMAC4HPO_dt.py
+odt/BOHB4HPO_odt.py
+odt/SMAC4HPO_odt.py
 bk.yml
