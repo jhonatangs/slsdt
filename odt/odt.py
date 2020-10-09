@@ -57,13 +57,13 @@ class ODT:
         min_samples_leaf=1,
         max_iterations=300000,
         l=10,
-        unique_increase=0.6,
-        multiple_increase=0.1,
-        jump=0.5,
-        swap=0.5,
-        reset=0.1,
-        double_half=0.5,
-        mathematical=0.5,
+        unique_increase=0.5,
+        multiple_increase=0.25,
+        jump=0.2,
+        swap=0.05,
+        reset=0.05,
+        double_half=0.05,
+        mathematical=0.05,
         seed=42,
     ):
 
@@ -338,9 +338,7 @@ class ODT:
     def __lahc(self, X, y, frequencies_y):
         if X.shape[0] > self.max_samples:
             random_indexes = np.random.choice(
-                X.shape[0],
-                size=self.max_samples,
-                replace=False,
+                X.shape[0], size=self.max_samples, replace=False,
             )
 
             X = np.copy(X[random_indexes])
@@ -351,12 +349,7 @@ class ODT:
         weights_final = np.copy(weights)
 
         cost = calc_impurity(
-            X,
-            y,
-            weights_final,
-            self.criterion,
-            frequencies_y,
-            self.min_samples_leaf,
+            X, y, weights_final, self.criterion, frequencies_y, self.min_samples_leaf,
         )
 
         cost_final = np.copy(cost)
