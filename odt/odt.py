@@ -64,12 +64,12 @@ class ODT:
         min_samples_leaf=1,
         max_iterations=300000,
         l=10,
-        increase=0.5,
-        multiple_increase=0.2,
-        percentage_increase=0.15,
-        percentage_decrease=0.15,
-        swap=0.05,
-        reset=0.05,
+        increase=0.6,
+        multiple_increase=0.25,
+        percentage_increase=0.25,
+        percentage_decrease=0.25,
+        swap=0.1,
+        reset=0.1,
         seed=42,
     ):
 
