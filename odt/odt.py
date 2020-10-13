@@ -24,12 +24,9 @@ class Movement:
 
     CONST_INCREASE = 1
     MULTIPLE_CONST_INCREASE = 2
-    PERCENTAGE_INCREASE = 3
-    MULTIPLE_PERCENTAGE_INCREASE = 4
-    DOUBLE_HALF = 5
-    MATHEMATICAL = 6
-    SWAP = 7
-    RESET = 8
+    SWAP = 3
+    RESET = 4
+    MATHEMATICAL = 5
 
 
 class Node:
@@ -66,14 +63,11 @@ class ODT:
         min_samples_leaf=1,
         max_iterations=300000,
         l=10,
-        const_increase=0.4,
-        multiple_const_increase=0.15,
-        percentage_increase=0.4,
-        multiple_percentage_increase=0.15,
-        double_half=0.05,
-        mathematical=0.05,
-        swap=0.05,
-        reset=0.05,
+        const_increase=0.7,
+        multiple_const_increase=0.25,
+        swap=0.1,
+        reset=0.1,
+        mathematical=1,
         seed=42,
     ):
 
@@ -87,12 +81,9 @@ class ODT:
         self.l = l
         self.const_increase = const_increase
         self.multiple_const_increase = multiple_const_increase
-        self.percentage_increase = percentage_increase
-        self.multiple_percentage_increase = multiple_percentage_increase
-        self.double_half = double_half
-        self.mathematical = mathematical
         self.swap = swap
         self.reset = reset
+        self.mathematical = mathematical
         self.rng = np.random.default_rng(seed)
 
     def get_params(self, deep=True):
@@ -112,11 +103,8 @@ class ODT:
             "l": self.l,
             "const_increase": self.const_increase,
             "multiple_const_increase": self.multiple_const_increase,
-            "percentage_increase": self.percentage_increase,
-            "multiple_percentage_increase": self.multiple_percentage_increase,
-            "double_half": self.double_half,
-            "mathematical": self.mathematical,
             "swap": self.swap,
+            "mathematical": self.mathematical,
             "reset": self.reset,
         }
 
@@ -182,12 +170,9 @@ class ODT:
         self.percentage_movements = [
             (Movement.CONST_INCREASE, self.const_increase),
             (Movement.MULTIPLE_CONST_INCREASE, self.multiple_const_increase),
-            (Movement.PERCENTAGE_INCREASE, self.percentage_increase),
-            (Movement.MULTIPLE_PERCENTAGE_INCREASE, self.multiple_percentage_increase),
-            (Movement.DOUBLE_HALF, self.double_half),
-            (Movement.MATHEMATICAL, self.mathematical),
             (Movement.SWAP, self.swap),
             (Movement.RESET, self.reset),
+            (Movement.MATHEMATICAL, self.mathematical),
         ]
 
         self.percentage_movements = sorted(
@@ -218,12 +203,6 @@ class ODT:
             return self.percentage_movements[3][0]
         elif x <= self.percentages_transform[4]:
             return self.percentage_movements[4][0]
-        elif x <= self.percentages_transform[5]:
-            return self.percentage_movements[5][0]
-        elif x <= self.percentages_transform[6]:
-            return self.percentage_movements[6][0]
-        elif x <= self.percentages_transform[7]:
-            return self.percentage_movements[7][0]
 
     def __make_movement(self, weights, movement):
         """makes a movement in weights, generating a neighbor
@@ -243,14 +222,14 @@ class ODT:
                 0
             ]
 
-            if self.rng.random() <= 0.3:
-                value_increase = (1.01 - -1) * self.rng.random() - 1
-            else:
-                value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
+            # if self.rng.random() <= 0.3:
+            #    value_increase = (1.01 - -1) * self.rng.random() - 1
+            # else:
+            #    value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
 
             # value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
 
-            # value_increase = (1.01 - -1) * self.rng.random() - 1
+            value_increase = (1.01 - -1) * self.rng.random() - 1
 
             weights_neighbor[column_modified] += value_increase
 
@@ -273,95 +252,14 @@ class ODT:
             for column_modified in columns_modified:
                 # value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
 
-                if self.rng.random() <= 0.3:
-                    value_increase = (1.01 - -1) * self.rng.random() - 1
-                else:
-                    value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
+                # if self.rng.random() <= 0.3:
+                #    value_increase = (1.01 - -1) * self.rng.random() - 1
+                # else:
+                #    value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
 
-                # value_increase = (1.01 - -1) * self.rng.random() - 1
+                value_increase = (1.01 - -1) * self.rng.random() - 1
 
                 weights_neighbor[column_modified] += value_increase
-
-        elif movement == Movement.PERCENTAGE_INCREASE:
-            column_modified = self.rng.integers(weights_neighbor.shape[0] - 1, size=1)[
-                0
-            ]
-
-            if self.rng.random() <= 0.3:
-                percentage_increase = (1.01 - -1) * self.rng.random() - 1
-            else:
-                percentage_increase = (0.51 - -0.5) * self.rng.random() - 0.5
-
-            # percentage_increase = (1.01 - -1) * self.rng.random() - 1
-
-            weights_neighbor[column_modified] += (
-                percentage_increase * weights_neighbor[column_modified]
-            )
-
-        elif movement == Movement.MULTIPLE_PERCENTAGE_INCREASE:
-            k = weights_neighbor.shape[0] // 2
-
-            number_columns_modified = self.rng.integers(2, k + 1, size=1)[0]
-
-            columns_modified = []
-
-            while len(columns_modified) != number_columns_modified:
-                column_modified = self.rng.integers(
-                    weights_neighbor.shape[0] - 1, size=1
-                )[0]
-
-                if not column_modified in columns_modified:
-                    columns_modified.append(column_modified)
-
-            for column_modified in columns_modified:
-
-                if self.rng.random() <= 0.3:
-                    percentage_increase = (1.01 - -1) * self.rng.random() - 1
-                else:
-                    percentage_increase = (0.51 - -0.5) * self.rng.random() - 0.5
-
-                # percentage_increase = (1.01 - -1) * self.rng.random() - 1
-
-                weights_neighbor[column_modified] += (
-                    percentage_increase * weights_neighbor[column_modified]
-                )
-
-        elif movement == Movement.DOUBLE_HALF:
-            column_modified = self.rng.integers(weights_neighbor.shape[0] - 1, size=1)[
-                0
-            ]
-
-            mov = self.rng.integers(1, 3, size=1)[0]
-
-            if mov == 1:
-                weights_neighbor[column_modified] = (
-                    weights_neighbor[column_modified] * 2
-                )
-            else:
-                weights_neighbor[column_modified] = (
-                    weights_neighbor[column_modified] / 2
-                )
-
-        elif movement == Movement.MATHEMATICAL:
-            functions = [np.square, np.sqrt, np.log, np.exp]
-
-            column_modified = self.rng.integers(weights_neighbor.shape[0] - 1, size=1)[
-                0
-            ]
-
-            function = self.rng.integers(4, size=1)[0]
-
-            if weights_neighbor[column_modified] == 0:
-                if function == 3:
-                    weights_neighbor[column_modified] = 1
-
-                else:
-                    weights_neighbor[column_modified] = 0
-
-            else:
-                weights_neighbor[column_modified] = functions[function](
-                    weights_neighbor[column_modified]
-                )
 
         elif movement == Movement.SWAP:
             column_modified = self.rng.integers(weights_neighbor.shape[0] - 1, size=1)[
@@ -386,6 +284,41 @@ class ODT:
             ]
 
             weights_neighbor[column_modified] = 0
+
+        elif movement == Movement.MATHEMATICAL:
+            column_modified = self.rng.integers(weights_neighbor.shape[0] - 1, size=1)[
+                0
+            ]
+
+            # **2, sqrt, ln(>0), exp, *2, /2
+
+            func = self.rng.integers(6, size=1)[0]
+
+            if func == 0:
+                weights_neighbor[column_modified] = (
+                    weights_neighbor[column_modified] * 2
+                )
+            elif func == 1:
+                weights_neighbor[column_modified] = (
+                    weights_neighbor[column_modified] / 2
+                )
+            elif func == 2:
+                weights_neighbor[column_modified] = np.square(
+                    weights_neighbor[column_modified]
+                )
+            elif func == 3:
+                weights_neighbor[column_modified] = np.sqrt(
+                    weights_neighbor[column_modified]
+                )
+            elif func == 4:
+                weights_neighbor[column_modified] = np.exp(
+                    weights_neighbor[column_modified]
+                )
+            else:
+                if weights_neighbor[column_modified] > 0:
+                    weights_neighbor[column_modified] = np.log(
+                        weights_neighbor[column_modified]
+                    )
 
         return weights_neighbor
 
