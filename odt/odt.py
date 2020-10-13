@@ -64,7 +64,7 @@ class ODT:
         max_samples=10000,
         min_samples_split=2,
         min_samples_leaf=1,
-        max_iterations=400000,
+        max_iterations=300000,
         l=10,
         const_increase=0.4,
         multiple_const_increase=0.15,
@@ -222,7 +222,7 @@ class ODT:
             return self.percentage_movements[5][0]
         elif x <= self.percentages_transform[6]:
             return self.percentage_movements[6][0]
-        else:
+        elif x <= self.percentages_transform[7]:
             return self.percentage_movements[7][0]
 
     def __make_movement(self, weights, movement):
@@ -243,14 +243,14 @@ class ODT:
                 0
             ]
 
-            # if self.rng.random() <= 0.3:
-            #    value_increase = (1.01 - -1) * self.rng.random() - 1
-            # else:
-            #    value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
+            if self.rng.random() <= 0.3:
+                value_increase = (1.01 - -1) * self.rng.random() - 1
+            else:
+                value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
 
             # value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
 
-            value_increase = (1.01 - -1) * self.rng.random() - 1
+            # value_increase = (1.01 - -1) * self.rng.random() - 1
 
             weights_neighbor[column_modified] += value_increase
 
@@ -273,12 +273,12 @@ class ODT:
             for column_modified in columns_modified:
                 # value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
 
-                # if self.rng.random() <= 0.3:
-                #    value_increase = (1.01 - -1) * self.rng.random() - 1
-                # else:
-                #    value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
+                if self.rng.random() <= 0.3:
+                    value_increase = (1.01 - -1) * self.rng.random() - 1
+                else:
+                    value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
 
-                value_increase = (1.01 - -1) * self.rng.random() - 1
+                # value_increase = (1.01 - -1) * self.rng.random() - 1
 
                 weights_neighbor[column_modified] += value_increase
 
@@ -287,7 +287,12 @@ class ODT:
                 0
             ]
 
-            percentage_increase = (1.01 - -1) * self.rng.random() - 1
+            if self.rng.random() <= 0.3:
+                percentage_increase = (1.01 - -1) * self.rng.random() - 1
+            else:
+                percentage_increase = (0.51 - -0.5) * self.rng.random() - 0.5
+
+            # percentage_increase = (1.01 - -1) * self.rng.random() - 1
 
             weights_neighbor[column_modified] += (
                 percentage_increase * weights_neighbor[column_modified]
@@ -310,7 +315,12 @@ class ODT:
 
             for column_modified in columns_modified:
 
-                percentage_increase = (1.01 - -1) * self.rng.random() - 1
+                if self.rng.random() <= 0.3:
+                    percentage_increase = (1.01 - -1) * self.rng.random() - 1
+                else:
+                    percentage_increase = (0.51 - -0.5) * self.rng.random() - 0.5
+
+                # percentage_increase = (1.01 - -1) * self.rng.random() - 1
 
                 weights_neighbor[column_modified] += (
                     percentage_increase * weights_neighbor[column_modified]
@@ -370,7 +380,7 @@ class ODT:
                 np.copy(weights_neighbor[column_modified]),
             )
 
-        else:
+        elif movement == Movement.RESET:
             column_modified = self.rng.integers(weights_neighbor.shape[0] - 1, size=1)[
                 0
             ]
@@ -382,9 +392,7 @@ class ODT:
     def __lahc(self, X, y, frequencies_y):
         if X.shape[0] > self.max_samples:
             random_indexes = np.random.choice(
-                X.shape[0],
-                size=self.max_samples,
-                replace=False,
+                X.shape[0], size=self.max_samples, replace=False,
             )
 
             X = np.copy(X[random_indexes])
@@ -395,12 +403,7 @@ class ODT:
         weights_final = np.copy(weights)
 
         cost = calc_impurity(
-            X,
-            y,
-            weights_final,
-            self.criterion,
-            frequencies_y,
-            self.min_samples_leaf,
+            X, y, weights_final, self.criterion, frequencies_y, self.min_samples_leaf,
         )
 
         cost_final = np.copy(cost)
