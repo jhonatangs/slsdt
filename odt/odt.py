@@ -12,14 +12,6 @@ from utils import (
 class Movement:
     """Represent a movement to generete a neighbors in a solution of the
     metaheuristic
-    const_increase
-    multiple_const_increase
-    percentage_increase
-    multiple_percentage_increase
-    double_half
-    mathematical
-    swap
-    reset
     """
 
     INCREASE = 1
@@ -234,9 +226,9 @@ class ODT:
             # else:
             #    value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
 
-            value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
+            # value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
 
-            # value_increase = (1.01 - -1) * self.rng.random() - 1
+            value_increase = (1 - -1) * self.rng.random() - 1
 
             # value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
 
@@ -266,9 +258,9 @@ class ODT:
                 # else:
                 #    value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
 
-                value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
+                # value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
 
-                # value_increase = (1.01 - -1) * self.rng.random() - 1
+                value_increase = (1 - -1) * self.rng.random() - 1
 
                 # value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
 
@@ -324,7 +316,9 @@ class ODT:
     def __lahc(self, X, y, frequencies_y):
         if X.shape[0] > self.max_samples:
             random_indexes = np.random.choice(
-                X.shape[0], size=self.max_samples, replace=False,
+                X.shape[0],
+                size=self.max_samples,
+                replace=False,
             )
 
             X = np.copy(X[random_indexes])
@@ -335,7 +329,12 @@ class ODT:
         weights_final = np.copy(weights)
 
         cost = calc_impurity(
-            X, y, weights_final, self.criterion, frequencies_y, self.min_samples_leaf,
+            X,
+            y,
+            weights_final,
+            self.criterion,
+            frequencies_y,
+            self.min_samples_leaf,
         )
 
         cost_final = np.copy(cost)
