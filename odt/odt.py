@@ -221,21 +221,11 @@ class ODT:
                 0
             ]
 
-            # if self.rng.random() <= 0.5:
-            #    value_increase = (1.01 - -1) * self.rng.random() - 1
-            # else:
-            #    value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
-
-            # value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
-
-            value_increase = (1 - -1) * self.rng.random() - 1
-
-            # value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
+            value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
 
             weights_neighbor[column_modified] += value_increase
 
         elif movement == Movement.MULTIPLE_INCREASE:
-            # k = 2 if weights_neighbor.shape[0] - 1 <= 4 else 4
             k = weights_neighbor.shape[0] // 2
 
             number_columns_modified = self.rng.integers(2, k + 1, size=1)[0]
@@ -251,18 +241,7 @@ class ODT:
                     columns_modified.append(column_modified)
 
             for column_modified in columns_modified:
-                # value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
-
-                # if self.rng.random() <= 0.5:
-                #    value_increase = (1.01 - -1) * self.rng.random() - 1
-                # else:
-                #    value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
-
-                # value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
-
-                value_increase = (1 - -1) * self.rng.random() - 1
-
-                # value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
+                value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
 
                 weights_neighbor[column_modified] += value_increase
 
@@ -356,9 +335,6 @@ class ODT:
             )
 
             if cost_neighbor >= cost or cost_neighbor >= costs[v]:
-                # if cost_neighbor > cost:
-                # iteration = 0
-
                 weights = np.copy(weights_neighbor)
                 cost = np.copy(cost_neighbor)
 
