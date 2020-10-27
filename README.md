@@ -1,7 +1,9 @@
+This repository is for my first scientific initiation project.
+
 # Oblique Decision Tree
 
 
-Oblique Decision Tree is a algorithm for generate a machine learning method called decision tree using oblique approach.
+Oblique Decision Tree is a algorithm for induction a machine learning method called decision tree using oblique approach.
 
 ## Examples
 
@@ -27,9 +29,8 @@ import numpy as np
 from sklearn.model_selection import cross_val_score, StratifiedKFold
 
 from reader_csv import read_csv
-from saodt import SAODT
+from odt import ODT
 
-# passes the file path and the class index
 X, y = read_csv("../instances_actions/iris.csv", "class")
 
 # can configure parameters
@@ -41,7 +42,6 @@ clf.fit(X, y)
 print(clf.predict(X) == y)
 
 # CROSS VALIDATION
-# with clf already instantiated
 cv = StratifiedKFold(n_splits=5)
 results = cross_val_score(clf, X, y, cv=cv, scoring="accuracy")
 print(results)
