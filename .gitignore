@@ -1,5 +1,6 @@
 .venv/
 instances/
+instances_a/
 odt/__pycache__
 odt/.mypy_cache
 odt/test.py
