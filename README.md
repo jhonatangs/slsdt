@@ -23,7 +23,7 @@ from odt import ODT
 
 X, y = read_csv("instances_actions/iris.csv", "class")
 
-clf = SAODT()
+clf = ODT()
 clf.fit(X, y)
 print(clf.predict(X) == y)
 
