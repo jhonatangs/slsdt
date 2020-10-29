@@ -49,32 +49,19 @@ class ODT:
 
     def __init__(
         self,
-        criterion="entropy",
-        increase=0.27296875,
-        l=51,
-        max_depth=10,
-        max_iterations=592188,
-        max_samples=67656,
-        min_samples_leaf=6,
-        min_samples_split=14,
-        multiple_increase=0.58234375,
-        percentage_decrease=0.05640625,
-        percentage_increase=0.21109375,
-        reset=0.14921875,
-        swap=0.36578125,
-        #criterion="gini",
-        #max_depth=None,
-        #max_samples=10000,
-        #min_samples_split=2,
-        #min_samples_leaf=1,
-        #max_iterations=500000,
-        #l=10,
-        #increase=0.55,
-        #multiple_increase=0.25,
-        #percentage_increase=0.15,
-        #percentage_decrease=0.15,
-        #swap=0.05,
-        #reset=0.05,
+        criterion="gini",
+        max_depth=None,
+        max_samples=10000,
+        min_samples_split=2,
+        min_samples_leaf=1,
+        max_iterations=200000,
+        l=10,
+        increase=0.6,
+        multiple_increase=0.2,
+        percentage_increase=0.0,
+        percentage_decrease=0.0,
+        swap=0.1,
+        reset=0.1,
         seed=42,
     ):
 
@@ -308,9 +295,7 @@ class ODT:
     def __lahc(self, X, y, frequencies_y):
         if X.shape[0] > self.max_samples:
             random_indexes = np.random.choice(
-                X.shape[0],
-                size=self.max_samples,
-                replace=False,
+                X.shape[0], size=self.max_samples, replace=False,
             )
 
             X = np.copy(X[random_indexes])
@@ -321,12 +306,7 @@ class ODT:
         weights_final = np.copy(weights)
 
         cost = calc_impurity(
-            X,
-            y,
-            weights_final,
-            self.criterion,
-            frequencies_y,
-            self.min_samples_leaf,
+            X, y, weights_final, self.criterion, frequencies_y, self.min_samples_leaf,
         )
 
         cost_final = np.copy(cost)
@@ -348,6 +328,8 @@ class ODT:
             )
 
             if cost_neighbor >= cost or cost_neighbor >= costs[v]:
+                if cost_neighbor > cost:
+                    iteration = 0
                 weights = np.copy(weights_neighbor)
                 cost = np.copy(cost_neighbor)
 

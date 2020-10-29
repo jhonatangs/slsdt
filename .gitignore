@@ -7,4 +7,5 @@ odt/test.py
 odt/test_performance.py
 odt/BOHB4HPO_odt.py
 odt/SMAC4HPO_odt.py
+odt/smac_result.py
 bk.yml
