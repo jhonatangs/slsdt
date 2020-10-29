@@ -14,13 +14,12 @@ class Movement:
     metaheuristic
     """
 
-    UNIQUE_INCREASE = 1
+    INCREASE = 1
     MULTIPLE_INCREASE = 2
-    SWAP = 3
-    RESET = 4
-    DOUBLE_HALF = 5
-    MATHEMATICAL = 6
-    JUMP = 7
+    PERCENTAGE_INCREASE = 3
+    PERCENTAGE_DECREASE = 4
+    SWAP = 5
+    RESET = 6
 
 
 class Node:
@@ -50,20 +49,32 @@ class ODT:
 
     def __init__(
         self,
-        criterion="gini",
-        max_depth=None,
-        max_samples=10000,
-        min_samples_split=2,
-        min_samples_leaf=1,
-        max_iterations=350000,
-        l=10,
-        unique_increase=0.5,
-        multiple_increase=0.15,
-        jump=0.15,
-        swap=0.05,
-        reset=0.05,
-        double_half=0.05,
-        mathematical=0.05,
+        criterion="entropy",
+        increase=0.27296875,
+        l=51,
+        max_depth=10,
+        max_iterations=592188,
+        max_samples=67656,
+        min_samples_leaf=6,
+        min_samples_split=14,
+        multiple_increase=0.58234375,
+        percentage_decrease=0.05640625,
+        percentage_increase=0.21109375,
+        reset=0.14921875,
+        swap=0.36578125,
+        #criterion="gini",
+        #max_depth=None,
+        #max_samples=10000,
+        #min_samples_split=2,
+        #min_samples_leaf=1,
+        #max_iterations=500000,
+        #l=10,
+        #increase=0.55,
+        #multiple_increase=0.25,
+        #percentage_increase=0.15,
+        #percentage_decrease=0.15,
+        #swap=0.05,
+        #reset=0.05,
         seed=42,
     ):
 
@@ -75,13 +86,12 @@ class ODT:
         self.min_samples_leaf = min_samples_leaf
         self.max_iterations = max_iterations
         self.l = l
-        self.unique_increase = unique_increase
+        self.increase = increase
         self.multiple_increase = multiple_increase
-        self.jump = jump
+        self.percentage_increase = percentage_increase
+        self.percentage_decrease = percentage_decrease
         self.swap = swap
         self.reset = reset
-        self.double_half = double_half
-        self.mathematical = mathematical
         self.rng = np.random.default_rng(seed)
 
     def get_params(self, deep=True):
@@ -99,13 +109,12 @@ class ODT:
             "min_samples_leaf": self.min_samples_leaf,
             "max_iterations": self.max_iterations,
             "l": self.l,
-            "unique_increase": self.unique_increase,
+            "increase": self.increase,
             "multiple_increase": self.multiple_increase,
+            "percentage_increase": self.percentage_increase,
+            "percentage_decrease": self.percentage_decrease,
             "swap": self.swap,
             "reset": self.reset,
-            "double_half": self.double_half,
-            "mathematical": self.mathematical,
-            "jump": self.jump,
         }
 
     def set_params(self, **parametes):
@@ -168,8 +177,10 @@ class ODT:
     def __calc_percentage_movements(self):
         """calculates the percentage of each movement"""
         self.percentage_movements = [
-            (Movement.UNIQUE_INCREASE, self.unique_increase),
+            (Movement.INCREASE, self.increase),
             (Movement.MULTIPLE_INCREASE, self.multiple_increase),
+            (Movement.PERCENTAGE_INCREASE, self.percentage_increase),
+            (Movement.PERCENTAGE_DECREASE, self.percentage_decrease),
             (Movement.SWAP, self.swap),
             (Movement.RESET, self.reset),
         ]
@@ -204,8 +215,6 @@ class ODT:
             return self.percentage_movements[4][0]
         elif x <= self.percentages_transform[5]:
             return self.percentage_movements[5][0]
-        else:
-            return self.percentage_movements[6][0]
 
     def __make_movement(self, weights, movement):
         """makes a movement in weights, generating a neighbor
@@ -220,22 +229,16 @@ class ODT:
 
         weights_neighbor = np.copy(weights)
 
-        if movement == Movement.UNIQUE_INCREASE:
+        if movement == Movement.INCREASE:
             column_modified = self.rng.integers(weights_neighbor.shape[0] - 1, size=1)[
                 0
             ]
 
-            if self.rng.random() <= 0.3:
-                value_increase = (1.01 - -1) * self.rng.random() - 1
-            else:
-                value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
-
-            # value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
+            value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
 
             weights_neighbor[column_modified] += value_increase
 
         elif movement == Movement.MULTIPLE_INCREASE:
-            # k = 2 if weights_neighbor.shape[0] - 1 <= 4 else 4
             k = weights_neighbor.shape[0] // 2
 
             number_columns_modified = self.rng.integers(2, k + 1, size=1)[0]
@@ -251,14 +254,31 @@ class ODT:
                     columns_modified.append(column_modified)
 
             for column_modified in columns_modified:
-                # value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
-
-                if self.rng.random() <= 0.3:
-                    value_increase = (1.01 - -1) * self.rng.random() - 1
-                else:
-                    value_increase = (0.51 - -0.5) * self.rng.random() - 0.5
+                value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
 
                 weights_neighbor[column_modified] += value_increase
+
+        elif movement == Movement.PERCENTAGE_INCREASE:
+            column_modified = self.rng.integers(weights_neighbor.shape[0] - 1, size=1)[
+                0
+            ]
+
+            percentage_increase = self.rng.random()
+
+            weights_neighbor[column_modified] += (
+                percentage_increase * weights_neighbor[column_modified]
+            )
+
+        elif movement == Movement.PERCENTAGE_DECREASE:
+            column_modified = self.rng.integers(weights_neighbor.shape[0] - 1, size=1)[
+                0
+            ]
+
+            percentage_decrease = self.rng.random()
+
+            weights_neighbor[column_modified] -= (
+                percentage_decrease * weights_neighbor[column_modified]
+            )
 
         elif movement == Movement.SWAP:
             column_modified = self.rng.integers(weights_neighbor.shape[0] - 1, size=1)[
@@ -282,56 +302,6 @@ class ODT:
                 0
             ]
             weights_neighbor[column_modified] = 0
-
-        elif movement == Movement.DOUBLE_HALF:
-            column_modified = self.rng.integers(weights_neighbor.shape[0] - 1, size=1)[
-                0
-            ]
-
-            mov = self.rng.integers(1, 3, size=1)[0]
-
-            if mov == 1:
-                weights_neighbor[column_modified] = (
-                    weights_neighbor[column_modified] * 2
-                )
-            else:
-                weights_neighbor[column_modified] = (
-                    weights_neighbor[column_modified] / 2
-                )
-
-        elif movement == Movement.JUMP:
-            mov = self.rng.integers(1, 3, size=1)[0]
-
-            for column_modified in weights_neighbor.shape[0] - 1:
-                if mov == 1:
-                    weights_neighbor[column_modified] = (
-                        weights_neighbor[column_modified] * 2
-                    )
-                else:
-                    weights_neighbor[column_modified] = (
-                        weights_neighbor[column_modified] / 2
-                    )
-
-        else:
-            functions = [np.square, np.sqrt, np.log, np.exp]
-
-            column_modified = self.rng.integers(weights_neighbor.shape[0] - 1, size=1)[
-                0
-            ]
-
-            function = self.rng.integers(4, size=1)[0]
-
-            if weights_neighbor[column_modified] == 0:
-                if function == 3:
-                    weights_neighbor[column_modified] = 1
-
-                else:
-                    weights_neighbor[column_modified] = 0
-
-            else:
-                weights_neighbor[column_modified] = functions[function](
-                    weights_neighbor[column_modified]
-                )
 
         return weights_neighbor
 
@@ -378,9 +348,6 @@ class ODT:
             )
 
             if cost_neighbor >= cost or cost_neighbor >= costs[v]:
-                # if cost_neighbor > cost:
-                #    iteration = 0
-
                 weights = np.copy(weights_neighbor)
                 cost = np.copy(cost_neighbor)
 
@@ -412,7 +379,6 @@ class ODT:
 
     def __make_tree(self, X, y, depth=1):
         print(depth)
-        # print(X.shape[0], y.shape[0])
         if X.shape[0] == 0 or y.shape[0] == 0:
             return Node()
 
