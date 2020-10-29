@@ -54,7 +54,7 @@ class ODT:
         max_samples=10000,
         min_samples_split=2,
         min_samples_leaf=1,
-        max_iterations=200000,
+        max_iterations=300000,
         l=10,
         increase=0.55,
         multiple_increase=0.25,
@@ -223,6 +223,8 @@ class ODT:
 
             value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
 
+            # value_increase = (1 - -1) * self.rng.random() + -1
+
             weights_neighbor[column_modified] += value_increase
 
         elif movement == Movement.MULTIPLE_INCREASE:
@@ -243,6 +245,8 @@ class ODT:
             for column_modified in columns_modified:
                 value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
 
+                # value_increase = (1 - -1) * self.rng.random() + -1
+
                 weights_neighbor[column_modified] += value_increase
 
         elif movement == Movement.PERCENTAGE_INCREASE:
@@ -252,8 +256,8 @@ class ODT:
 
             percentage_increase = self.rng.random()
 
-            weights_neighbor[column_modified] += (
-                percentage_increase * weights_neighbor[column_modified]
+            weights_neighbor[column_modified] += percentage_increase * abs(
+                weights_neighbor[column_modified]
             )
 
         elif movement == Movement.PERCENTAGE_DECREASE:
@@ -263,8 +267,8 @@ class ODT:
 
             percentage_decrease = self.rng.random()
 
-            weights_neighbor[column_modified] -= (
-                percentage_decrease * weights_neighbor[column_modified]
+            weights_neighbor[column_modified] -= percentage_decrease * abs(
+                weights_neighbor[column_modified]
             )
 
         elif movement == Movement.SWAP:
@@ -295,9 +299,7 @@ class ODT:
     def __lahc(self, X, y, frequencies_y):
         if X.shape[0] > self.max_samples:
             random_indexes = np.random.choice(
-                X.shape[0],
-                size=self.max_samples,
-                replace=False,
+                X.shape[0], size=self.max_samples, replace=False,
             )
 
             X = np.copy(X[random_indexes])
@@ -308,12 +310,7 @@ class ODT:
         weights_final = np.copy(weights)
 
         cost = calc_impurity(
-            X,
-            y,
-            weights_final,
-            self.criterion,
-            frequencies_y,
-            self.min_samples_leaf,
+            X, y, weights_final, self.criterion, frequencies_y, self.min_samples_leaf,
         )
 
         cost_final = np.copy(cost)
