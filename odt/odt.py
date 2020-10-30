@@ -54,7 +54,7 @@ class ODT:
         max_samples=10000,
         min_samples_split=2,
         min_samples_leaf=1,
-        max_iterations=200000,
+        max_iterations=300000,
         l=20,
         increase=0.55,
         multiple_increase=0.25,
