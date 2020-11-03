@@ -221,9 +221,9 @@ class ODT:
                 0
             ]
 
-            value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
+            # value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
 
-            # value_increase = (1 - -1) * self.rng.random() + -1
+            value_increase = (1 - -1) * self.rng.random() + -1
 
             weights_neighbor[column_modified] += value_increase
 
@@ -243,9 +243,9 @@ class ODT:
                     columns_modified.append(column_modified)
 
             for column_modified in columns_modified:
-                value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
+                # value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
 
-                # value_increase = (1 - -1) * self.rng.random() + -1
+                value_increase = (1 - -1) * self.rng.random() + -1
 
                 weights_neighbor[column_modified] += value_increase
 
@@ -339,8 +339,8 @@ class ODT:
             )
 
             if cost_neighbor >= cost or cost_neighbor >= costs[v]:
-                if cost_neighbor > cost:
-                    iteration = 0
+                # if cost_neighbor > cost:
+                #    iteration = 0
                 weights = np.copy(weights_neighbor)
                 cost = np.copy(cost_neighbor)
 
