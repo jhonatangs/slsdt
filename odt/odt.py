@@ -221,9 +221,9 @@ class ODT:
                 0
             ]
 
-            # value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
+            value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
 
-            value_increase = (1 - -1) * self.rng.random() + -1
+            # value_increase = (1 - -1) * self.rng.random() + -1
 
             weights_neighbor[column_modified] += value_increase
 
@@ -243,9 +243,9 @@ class ODT:
                     columns_modified.append(column_modified)
 
             for column_modified in columns_modified:
-                # value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
+                value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
 
-                value_increase = (1 - -1) * self.rng.random() + -1
+                # value_increase = (1 - -1) * self.rng.random() + -1
 
                 weights_neighbor[column_modified] += value_increase
 
@@ -299,9 +299,7 @@ class ODT:
     def __lahc(self, X, y, frequencies_y):
         if X.shape[0] > self.max_samples:
             random_indexes = np.random.choice(
-                X.shape[0],
-                size=self.max_samples,
-                replace=False,
+                X.shape[0], size=self.max_samples, replace=False,
             )
 
             X = np.copy(X[random_indexes])
@@ -312,12 +310,7 @@ class ODT:
         weights_final = np.copy(weights)
 
         cost = calc_impurity(
-            X,
-            y,
-            weights_final,
-            self.criterion,
-            frequencies_y,
-            self.min_samples_leaf,
+            X, y, weights_final, self.criterion, frequencies_y, self.min_samples_leaf,
         )
 
         cost_final = np.copy(cost)
