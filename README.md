@@ -14,7 +14,7 @@ pip install -r requirements.txt
 
 ### Example
 
-```
+```python
 import numpy as np
 from sklearn.model_selection import cross_val_score, StratifiedKFold
 
