@@ -1,9 +1,11 @@
+from typing import Tuple
+
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
 
 
-def read_csv(file, class_index):
+def read_csv(file: str, class_index: str) -> Tuple[np.ndarray, np.ndarray]:
     """Reads a database in csv file format performing pre-processing. Returning
     datas and classes separately.
 
