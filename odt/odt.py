@@ -52,13 +52,13 @@ class ODT:
 
     def __init__(
         self,
-        criterion="gini",
+        criterion="entropy",
         max_depth=None,
         max_samples=10000,
         min_samples_split=2,
         min_samples_leaf=1,
         max_iterations=500000,
-        l=20,
+        l=25,
         increase=0.55,
         multiple_increase=0.25,
         percentage_increase=0.15,
@@ -310,7 +310,9 @@ class ODT:
     def __lahc(self, X, y, frequencies_y):
         if X.shape[0] > self.max_samples:
             random_indexes = np.random.choice(
-                X.shape[0], size=self.max_samples, replace=False,
+                X.shape[0],
+                size=self.max_samples,
+                replace=False,
             )
 
             X = np.copy(X[random_indexes])
@@ -321,7 +323,12 @@ class ODT:
         weights_final = np.copy(weights)
 
         cost = calc_impurity(
-            X, y, weights_final, self.criterion, frequencies_y, self.min_samples_leaf,
+            X,
+            y,
+            weights_final,
+            self.criterion,
+            frequencies_y,
+            self.min_samples_leaf,
         )
 
         cost_final = np.copy(cost)
