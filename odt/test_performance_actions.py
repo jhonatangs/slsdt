@@ -29,5 +29,6 @@ for instance in instances:
     results.append(result)
 
 df = pd.DataFrame(results, columns=["Instance", "DecisionTreeClassifier", "DT"])
+df.round(3)
 print(df)
 df.to_csv("results/result_performance.csv")

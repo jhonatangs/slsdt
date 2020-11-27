@@ -26,6 +26,8 @@ def read_csv(file: str, class_index: str) -> Tuple[np.ndarray, np.ndarray]:
             df[column] = encoder.fit_transform(df[column])
 
     data = np.ascontiguousarray(df.drop([class_index], axis=1, inplace=False).values)
-    classes = np.ascontiguousarray(df[class_index].values)
+
+    encoder = LabelEncoder()
+    classes = np.ascontiguousarray(encoder.fit_transform(df[class_index]))
 
     return np.array(data, np.float64), np.array(classes, np.int64)

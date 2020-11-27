@@ -12,7 +12,7 @@ from utils import (
 )
 
 
-class Movement(Enum):
+class _Movement(Enum):
     """Represent a movement to generete a neighbors in a solution of the
     metaheuristic
     """
@@ -25,7 +25,7 @@ class Movement(Enum):
     RESET = 6
 
 
-class Node:
+class _Node:
     """Represents a node in a decision tree"""
 
     def __init__(
@@ -52,20 +52,20 @@ class ODT:
 
     def __init__(
         self,
-        criterion="entropy",
-        max_depth=None,
-        max_samples=10000,
-        min_samples_split=2,
-        min_samples_leaf=1,
-        max_iterations=500000,
-        l=25,
-        increase=0.55,
-        multiple_increase=0.25,
-        percentage_increase=0.15,
-        percentage_decrease=0.15,
-        swap=0.05,
-        reset=0.05,
-        seed=42,
+        criterion: str = "gini",
+        max_depth: int = None,
+        max_samples: int = 10000,
+        min_samples_split: int = 2,
+        min_samples_leaf: int = 1,
+        max_iterations: int = 500000,
+        l: int = 25,
+        increase: float = 0.55,
+        multiple_increase: float = 0.25,
+        percentage_increase: float = 0.15,
+        percentage_decrease: float = 0.15,
+        swap: float = 0.05,
+        reset: float = 0.05,
+        seed: int = 42,
     ):
 
         self.criterion = criterion
@@ -178,12 +178,12 @@ class ODT:
         """calculates the percentage of each movement"""
 
         self.percentage_movements = [
-            (Movement.INCREASE, self.increase),
-            (Movement.MULTIPLE_INCREASE, self.multiple_increase),
-            (Movement.PERCENTAGE_INCREASE, self.percentage_increase),
-            (Movement.PERCENTAGE_DECREASE, self.percentage_decrease),
-            (Movement.SWAP, self.swap),
-            (Movement.RESET, self.reset),
+            (_Movement.INCREASE, self.increase),
+            (_Movement.MULTIPLE_INCREASE, self.multiple_increase),
+            (_Movement.PERCENTAGE_INCREASE, self.percentage_increase),
+            (_Movement.PERCENTAGE_DECREASE, self.percentage_decrease),
+            (_Movement.SWAP, self.swap),
+            (_Movement.RESET, self.reset),
         ]
 
         self.percentage_movements = sorted(
@@ -230,7 +230,7 @@ class ODT:
 
         weights_neighbor = np.copy(weights)
 
-        if movement == Movement.INCREASE:
+        if movement == _Movement.INCREASE:
             column_modified = self.rng.integers(weights_neighbor.shape[0] - 1, size=1)[
                 0
             ]
@@ -239,10 +239,13 @@ class ODT:
 
             weights_neighbor[column_modified] += value_increase
 
-        elif movement == Movement.MULTIPLE_INCREASE:
+        elif movement == _Movement.MULTIPLE_INCREASE:
             k = weights_neighbor.shape[0] // 2
 
-            number_columns_modified = self.rng.integers(2, k + 1, size=1)[0]
+            try:
+                number_columns_modified = self.rng.integers(2, k + 1, size=1)[0]
+            except ValueError:
+                number_columns_modified = 1
 
             columns_modified = []
 
@@ -259,7 +262,7 @@ class ODT:
 
                 weights_neighbor[column_modified] += value_increase
 
-        elif movement == Movement.PERCENTAGE_INCREASE:
+        elif movement == _Movement.PERCENTAGE_INCREASE:
             column_modified = self.rng.integers(weights_neighbor.shape[0] - 1, size=1)[
                 0
             ]
@@ -270,7 +273,7 @@ class ODT:
                 weights_neighbor[column_modified]
             )
 
-        elif movement == Movement.PERCENTAGE_DECREASE:
+        elif movement == _Movement.PERCENTAGE_DECREASE:
             column_modified = self.rng.integers(weights_neighbor.shape[0] - 1, size=1)[
                 0
             ]
@@ -281,7 +284,7 @@ class ODT:
                 weights_neighbor[column_modified]
             )
 
-        elif movement == Movement.SWAP:
+        elif movement == _Movement.SWAP:
             column_modified = self.rng.integers(weights_neighbor.shape[0] - 1, size=1)[
                 0
             ]
@@ -298,7 +301,7 @@ class ODT:
                 np.copy(weights_neighbor[column_modified]),
             )
 
-        elif movement == Movement.RESET:
+        elif movement == _Movement.RESET:
             column_modified = self.rng.integers(weights_neighbor.shape[0] - 1, size=1)[
                 0
             ]
@@ -310,9 +313,7 @@ class ODT:
     def __lahc(self, X, y, frequencies_y):
         if X.shape[0] > self.max_samples:
             random_indexes = np.random.choice(
-                X.shape[0],
-                size=self.max_samples,
-                replace=False,
+                X.shape[0], size=self.max_samples, replace=False,
             )
 
             X = np.copy(X[random_indexes])
@@ -323,12 +324,7 @@ class ODT:
         weights_final = np.copy(weights)
 
         cost = calc_impurity(
-            X,
-            y,
-            weights_final,
-            self.criterion,
-            frequencies_y,
-            self.min_samples_leaf,
+            X, y, weights_final, self.criterion, frequencies_y, self.min_samples_leaf,
         )
 
         cost_final = np.copy(cost)
@@ -382,13 +378,15 @@ class ODT:
     def __make_tree(self, X, y, depth=1):
         # print(depth)
         if X.shape[0] == 0 or y.shape[0] == 0:
-            return Node()
+            return _Node()
 
         classes, count_classes = np.unique(y, return_counts=True)
 
         error = np.sum(np.delete(count_classes, np.argmax(count_classes)))
 
-        frequencies_y = np.zeros(self.n_features)
+        frequencies_y = np.zeros(self.n_classes)
+        # print(self.n_classes)
+        # print(frequencies_y, classes, count_classes)
         frequencies_y[classes] = count_classes
 
         n_classes = classes.shape[0]
@@ -402,13 +400,15 @@ class ODT:
             if (
                 np.sum(split) <= self.min_samples_leaf
                 or np.sum(~split) <= self.min_samples_leaf
+                or np.sum(split) <= 0
+                or np.sum(~split) <= 0
             ):
-                return Node(is_leaf=True, results=frequencies_y, error=error)
+                return _Node(is_leaf=True, results=frequencies_y, error=error)
 
             left = self.__make_tree(X[split], y[split], depth + 1)
             right = self.__make_tree(X[~split], y[~split], depth + 1)
 
-            return Node(
+            return _Node(
                 weights=weights,
                 children_left=left,
                 children_right=right,
@@ -416,7 +416,7 @@ class ODT:
                 error=error,
             )
 
-        return Node(is_leaf=True, results=frequencies_y, error=error)
+        return _Node(is_leaf=True, results=frequencies_y, error=error)
 
     def __prune(self, tree):
         if tree.is_leaf:
@@ -458,3 +458,12 @@ class ODT:
             y_pred[~split] = self.__classify(node.children_right, X[~split])
 
         return y_pred
+
+
+if __name__ == "__main__":
+    from reader_csv import read_csv
+
+    X, y = read_csv("../instances_actions/iris.csv", "class")
+    clf = ODT()
+    clf.fit(X, y)
+    #print(clf.predict(X) == y)
