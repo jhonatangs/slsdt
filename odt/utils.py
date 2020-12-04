@@ -5,25 +5,6 @@ from numba import njit
 
 
 @njit
-def entropy(count_labels):
-    """calculates of the entropy (impurity criterion) in the current node
-
-    Arguments:
-        classes {numpy.ndarray} -- number of occurrences of each class in the
-        current node
-
-    Returns:
-        float -- entropy calculated
-    """
-    count_labels = count_labels / np.sum(count_labels)
-    count_labels = count_labels[count_labels != 0]
-    aux_entropy = lambda x: x * np.log2(x)
-    count_labels = aux_entropy(count_labels)
-
-    return -np.sum(count_labels)
-
-
-@njit
 def gini(count_labels):
     """calculates of the gini (impurity criterion) in the current node
 
@@ -34,14 +15,12 @@ def gini(count_labels):
     Returns:
         float -- gini calculated
     """
-    count_labels = count_labels / np.sum(count_labels)
-    count_labels = np.square(count_labels)
 
-    return 1 - np.sum(count_labels)
+    return 1 - np.sum(np.square(count_labels / np.sum(count_labels)))
 
 
 @njit
-def best_in_column(X, y, index, criterion, frequencies_y):
+def best_in_column(X, y, index, frequencies_y):
     """Return the best impurity in column selected using the impurity
     criterion specified.
 
@@ -56,11 +35,9 @@ def best_in_column(X, y, index, criterion, frequencies_y):
         Tuple -- A tuple containing of the best threshold value and the best
         impurity value
     """
-    best_impurity = -math.inf
+    best_impurity = math.inf
     best_threshold = None
     n_samples = X.shape[0]
-
-    total_impurity = criterion(frequencies_y)
 
     count_right = np.copy(frequencies_y)
     count_left = np.zeros_like(frequencies_y)
@@ -95,11 +72,9 @@ def best_in_column(X, y, index, criterion, frequencies_y):
         p1 = sum_left / float(n_samples)
         p2 = sum_right / float(n_samples)
 
-        impurity = (
-            total_impurity - p1 * criterion(count_left) - p2 * criterion(count_right)
-        )
+        impurity = p1 * gini(count_left) + p2 * gini(count_right)
 
-        if impurity > best_impurity and sum_left > 0 and sum_right > 0:
+        if impurity < best_impurity and sum_left > 0 and sum_right > 0:
             best_impurity = impurity
             best_threshold = column[i, 1]
 
@@ -109,7 +84,7 @@ def best_in_column(X, y, index, criterion, frequencies_y):
 
 
 @njit
-def best_split(X, y, criterion, frequencies_y):
+def best_split(X, y, frequencies_y):
     """Search for the best point for tree division
 
     Args:
@@ -125,11 +100,11 @@ def best_split(X, y, criterion, frequencies_y):
     best_index, best_threshold, best_impurity = (
         -1,
         None,
-        -math.inf,
+        math.inf,
     )
     for i in range(X.shape[1]):
-        aux_threshold, aux_gain = best_in_column(X, y, i, criterion, frequencies_y)
-        if aux_gain > best_impurity:
+        aux_threshold, aux_gain = best_in_column(X, y, i, frequencies_y)
+        if aux_gain < best_impurity:
             best_impurity = aux_gain
             best_threshold = aux_threshold
             best_index = i
@@ -138,7 +113,7 @@ def best_split(X, y, criterion, frequencies_y):
 
 
 @njit
-def make_initial_weights(X, y, criterion, frequencies_y):
+def make_initial_weights(X, y, frequencies_y):
     """Make a initial solution of the weights for metaheuristic
 
     Args:
@@ -151,7 +126,7 @@ def make_initial_weights(X, y, criterion, frequencies_y):
     Returns:
         numpy.ndarray: weights representing a initial solution
     """
-    best_index, best_threshold = best_split(X, y, criterion, frequencies_y)
+    best_index, best_threshold = best_split(X, y, frequencies_y)
 
     weights = np.zeros(X.shape[1] + 1)
     weights[-1] = -best_threshold
@@ -175,7 +150,7 @@ def apply_weights(record, weights):
 
 
 @njit
-def calc_impurity(X, y, weights, criterion, frequencies_y, min_samples_leaf):
+def calc_impurity(X, y, weights, frequencies_y, min_samples_leaf):
     """calculates the impurity applying the weights in the data
 
     Args:
@@ -204,14 +179,10 @@ def calc_impurity(X, y, weights, criterion, frequencies_y, min_samples_leaf):
         or np.sum(count_left) <= 0
         or np.sum(count_right) <= 0
     ):
-        return -math.inf
+        return math.inf
 
     total_frequencies_y = np.sum(frequencies_y)
     p1 = np.sum(count_left) / total_frequencies_y
     p2 = np.sum(count_right) / total_frequencies_y
 
-    return (
-        criterion(frequencies_y)
-        - p1 * criterion(count_left)
-        - p2 * criterion(count_right)
-    )
+    return p1 * gini(count_left) + p2 * gini(count_right)

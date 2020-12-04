@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from enum import Enum
 
 import numpy as np
@@ -6,8 +7,6 @@ import numpy as np
 from utils import (
     apply_weights,
     calc_impurity,
-    entropy,
-    gini,
     make_initial_weights,
 )
 
@@ -19,10 +18,11 @@ class _Movement(Enum):
 
     INCREASE = 1
     MULTIPLE_INCREASE = 2
-    PERCENTAGE_INCREASE = 3
-    PERCENTAGE_DECREASE = 4
-    SWAP = 5
-    RESET = 6
+    JUMP = 3
+    PERCENTAGE_INCREASE = 4
+    PERCENTAGE_DECREASE = 5
+    SWAP = 6
+    RESET = 7
 
 
 class _Node:
@@ -52,23 +52,23 @@ class ODT:
 
     def __init__(
         self,
-        criterion: str = "gini",
-        max_depth: int = None,
+        max_depth: int = 8,
         max_samples: int = 10000,
-        min_samples_split: int = 2,
-        min_samples_leaf: int = 1,
+        min_samples_split: int = 4,
+        min_samples_leaf: int = 7,
         max_iterations: int = 500000,
-        l: int = 25,
-        increase: float = 0.55,
-        multiple_increase: float = 0.25,
-        percentage_increase: float = 0.15,
-        percentage_decrease: float = 0.15,
-        swap: float = 0.05,
-        reset: float = 0.05,
+        l: int = 15,
+        increase: float = 0.,
+        multiple_increase: float = 0.,
+        k: float = 0.75,
+        jump: float = 1,
+        percentage_increase: float = 0.0,
+        percentage_decrease: float = 0.0,
+        swap: float = 0.0,
+        reset: float = 0.,
         seed: int = 42,
     ):
 
-        self.criterion = criterion
         self.max_depth = max_depth
         self.max_samples = max_samples
         self.min_samples_split = min_samples_split
@@ -77,6 +77,8 @@ class ODT:
         self.l = l
         self.increase = increase
         self.multiple_increase = multiple_increase
+        self.k = k
+        self.jump = jump
         self.percentage_increase = percentage_increase
         self.percentage_decrease = percentage_decrease
         self.swap = swap
@@ -101,7 +103,6 @@ class ODT:
         self.n_classes = self.unique_classes.shape[0]
         self.n_features = X.shape[1]
         self.__calc_percentage_movements()
-        self.criterion = entropy if self.criterion == "entropy" else gini
         self.tree = self.__make_tree(X, y)
         self.__prune(self.tree)
 
@@ -126,7 +127,6 @@ class ODT:
             Dict: params of the class
         """
         return {
-            "criterion": self.criterion,
             "max_depth": self.max_depth,
             "max_samples": self.max_samples,
             "min_samples_split": self.min_samples_split,
@@ -135,6 +135,8 @@ class ODT:
             "l": self.l,
             "increase": self.increase,
             "multiple_increase": self.multiple_increase,
+            "k": self.k,
+            "jump": self.jump,
             "percentage_increase": self.percentage_increase,
             "percentage_decrease": self.percentage_decrease,
             "swap": self.swap,
@@ -180,6 +182,7 @@ class ODT:
         self.percentage_movements = [
             (_Movement.INCREASE, self.increase),
             (_Movement.MULTIPLE_INCREASE, self.multiple_increase),
+            (_Movement.JUMP, self.jump),
             (_Movement.PERCENTAGE_INCREASE, self.percentage_increase),
             (_Movement.PERCENTAGE_DECREASE, self.percentage_decrease),
             (_Movement.SWAP, self.swap),
@@ -216,6 +219,8 @@ class ODT:
             return self.percentage_movements[4][0]
         elif x <= self.percentages_transform[5]:
             return self.percentage_movements[5][0]
+        else:
+            return self.percentage_movements[6][0]
 
     def __make_movement(self, weights, movement):
         """makes a movement in weights, generating a neighbor
@@ -235,30 +240,48 @@ class ODT:
                 0
             ]
 
-            value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
+            value_increase = (1 - -1) * self.rng.random() + -1
+            #value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
 
             weights_neighbor[column_modified] += value_increase
 
         elif movement == _Movement.MULTIPLE_INCREASE:
-            k = weights_neighbor.shape[0] // 2
+            #k = weights_neighbor.shape[0] // 2
+            k = (self.k * 100) * weights_neighbor.shape[0] // 100
 
-            try:
+            number_columns_modified = self.rng.integers(1, k + 1)
+            columns_modified = self.rng.choice(
+                weights_neighbor.shape[0] - 1,
+                size=number_columns_modified,
+                replace=False,
+            )
+
+            """try:
                 number_columns_modified = self.rng.integers(2, k + 1, size=1)[0]
+                columns_modified = self.rng.choice(
+                    weights_neighbor.shape[0] - 1,
+                    size=number_columns_modified,
+                    replace=False,
+                )
             except ValueError:
                 number_columns_modified = 1
-
-            columns_modified = []
-
-            while len(columns_modified) != number_columns_modified:
-                column_modified = self.rng.integers(
+                columns_modified = self.rng.integers(
                     weights_neighbor.shape[0] - 1, size=1
-                )[0]
-
-                if not column_modified in columns_modified:
-                    columns_modified.append(column_modified)
+                )"""
 
             for column_modified in columns_modified:
                 value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
+                #value_increase = (1 - -1) * self.rng.random() + -1
+
+                weights_neighbor[column_modified] += value_increase
+
+        elif movement == _Movement.JUMP:
+
+            columns_modified = np.array(list(range(weights_neighbor.shape[0] - 1)))
+
+            for column_modified in columns_modified:
+                value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
+                #value_increase = (1 - -1) * self.rng.random() + -1
 
                 weights_neighbor[column_modified] += value_increase
 
@@ -308,6 +331,14 @@ class ODT:
 
             weights_neighbor[column_modified] = 0
 
+        """elif movement == _Movement.RESET:
+            columns_modified = np.array(list(range(weights_neighbor.shape[0] - 1)))
+
+            for column_modified in columns_modified:
+
+                weights_neighbor[column_modified] = 0"""
+
+
         return weights_neighbor
 
     def __lahc(self, X, y, frequencies_y):
@@ -319,13 +350,11 @@ class ODT:
             X = np.copy(X[random_indexes])
             y = np.copy(y[random_indexes])
 
-        weights = make_initial_weights(X, y, self.criterion, frequencies_y)
+        weights = make_initial_weights(X, y, frequencies_y)
 
         weights_final = np.copy(weights)
 
-        cost = calc_impurity(
-            X, y, weights_final, self.criterion, frequencies_y, self.min_samples_leaf,
-        )
+        cost = calc_impurity(X, y, weights_final, frequencies_y, self.min_samples_leaf,)
 
         cost_final = np.copy(cost)
 
@@ -334,22 +363,20 @@ class ODT:
         iteration, v = 0, 0
 
         while iteration < self.max_iterations:
-            weights_neighbor = self.__make_movement(weights, self.__build_movement())
+            # weights_neighbor = self.__make_movement(weights, self.__build_movement())
+            movement = self.__build_movement()
+            # print(movement)
+            weights_neighbor = self.__make_movement(weights, movement)
 
             cost_neighbor = calc_impurity(
-                X,
-                y,
-                weights_neighbor,
-                self.criterion,
-                frequencies_y,
-                self.min_samples_leaf,
+                X, y, weights_neighbor, frequencies_y, self.min_samples_leaf,
             )
 
-            if cost_neighbor >= cost or cost_neighbor >= costs[v]:
+            if cost_neighbor <= cost or cost_neighbor <= costs[v]:
                 weights = np.copy(weights_neighbor)
                 cost = np.copy(cost_neighbor)
 
-                if cost > cost_final:
+                if cost < cost_final:
                     weights_final = np.copy(weights)
                     cost_final = np.copy(cost)
 
@@ -461,9 +488,10 @@ class ODT:
 
 
 if __name__ == "__main__":
-    from reader_csv import read_csv
+    pass
+    # from reader_csv import read_csv
 
-    X, y = read_csv("../instances_actions/iris.csv", "class")
-    clf = ODT()
-    clf.fit(X, y)
-    #print(clf.predict(X) == y)
+    # X, y = read_csv("../instances_actions/iris.csv", "class")
+    # clf = ODT()
+    # clf.fit(X, y)
+    # print(clf.predict(X) == y)
