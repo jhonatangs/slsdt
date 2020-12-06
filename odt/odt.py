@@ -4,9 +4,13 @@ from enum import Enum
 
 import numpy as np
 
+# from sklearn.preprocessing import LabelEncoder
+
 from utils import (
     apply_weights,
     calc_impurity,
+    entropy,
+    gini,
     make_initial_weights,
 )
 
@@ -52,23 +56,25 @@ class ODT:
 
     def __init__(
         self,
+        criterion: str = "gini",
         max_depth: int = 8,
         max_samples: int = 10000,
         min_samples_split: int = 4,
         min_samples_leaf: int = 7,
-        max_iterations: int = 500000,
-        l: int = 15,
-        increase: float = 0.,
-        multiple_increase: float = 0.,
+        max_iterations: int = 700000,
+        l: int = 20,
+        increase: float = 0.0,
+        multiple_increase: float = 0.6,
         k: float = 0.75,
-        jump: float = 1,
+        jump: float = 0.3,
         percentage_increase: float = 0.0,
         percentage_decrease: float = 0.0,
         swap: float = 0.0,
-        reset: float = 0.,
+        reset: float = 0.1,
         seed: int = 42,
     ):
 
+        self.criterion = criterion
         self.max_depth = max_depth
         self.max_samples = max_samples
         self.min_samples_split = min_samples_split
@@ -95,6 +101,9 @@ class ODT:
         Returns:
             ODT: return the class
         """
+        # encoder = LabelEncoder()
+        # y = encoder.fit_transform(y)
+
         X, y = self.__check_X_y(X, y)
 
         self.X = X
@@ -103,6 +112,7 @@ class ODT:
         self.n_classes = self.unique_classes.shape[0]
         self.n_features = X.shape[1]
         self.__calc_percentage_movements()
+        self.criterion = entropy if self.criterion == "entropy" else gini
         self.tree = self.__make_tree(X, y)
         self.__prune(self.tree)
 
@@ -127,6 +137,7 @@ class ODT:
             Dict: params of the class
         """
         return {
+            "criterion": self.criterion,
             "max_depth": self.max_depth,
             "max_samples": self.max_samples,
             "min_samples_split": self.min_samples_split,
@@ -241,12 +252,12 @@ class ODT:
             ]
 
             value_increase = (1 - -1) * self.rng.random() + -1
-            #value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
+            # value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
 
             weights_neighbor[column_modified] += value_increase
 
         elif movement == _Movement.MULTIPLE_INCREASE:
-            #k = weights_neighbor.shape[0] // 2
+            # k = weights_neighbor.shape[0] // 2
             k = (self.k * 100) * weights_neighbor.shape[0] // 100
 
             number_columns_modified = self.rng.integers(1, k + 1)
@@ -271,7 +282,7 @@ class ODT:
 
             for column_modified in columns_modified:
                 value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
-                #value_increase = (1 - -1) * self.rng.random() + -1
+                # value_increase = (1 - -1) * self.rng.random() + -1
 
                 weights_neighbor[column_modified] += value_increase
 
@@ -281,7 +292,7 @@ class ODT:
 
             for column_modified in columns_modified:
                 value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
-                #value_increase = (1 - -1) * self.rng.random() + -1
+                # value_increase = (1 - -1) * self.rng.random() + -1
 
                 weights_neighbor[column_modified] += value_increase
 
@@ -338,23 +349,31 @@ class ODT:
 
                 weights_neighbor[column_modified] = 0"""
 
-
         return weights_neighbor
 
     def __lahc(self, X, y, frequencies_y):
         if X.shape[0] > self.max_samples:
             random_indexes = np.random.choice(
-                X.shape[0], size=self.max_samples, replace=False,
+                X.shape[0],
+                size=self.max_samples,
+                replace=False,
             )
 
             X = np.copy(X[random_indexes])
             y = np.copy(y[random_indexes])
 
-        weights = make_initial_weights(X, y, frequencies_y)
+        weights = make_initial_weights(X, y, self.criterion, frequencies_y)
 
         weights_final = np.copy(weights)
 
-        cost = calc_impurity(X, y, weights_final, frequencies_y, self.min_samples_leaf,)
+        cost = calc_impurity(
+            X,
+            y,
+            weights_final,
+            self.criterion,
+            frequencies_y,
+            self.min_samples_leaf,
+        )
 
         cost_final = np.copy(cost)
 
@@ -369,14 +388,24 @@ class ODT:
             weights_neighbor = self.__make_movement(weights, movement)
 
             cost_neighbor = calc_impurity(
-                X, y, weights_neighbor, frequencies_y, self.min_samples_leaf,
+                X,
+                y,
+                weights_neighbor,
+                self.criterion,
+                frequencies_y,
+                self.min_samples_leaf,
             )
 
-            if cost_neighbor <= cost or cost_neighbor <= costs[v]:
+            if cost_neighbor >= cost or cost_neighbor >= costs[v]:
+                """print(
+                    f"cost_neighbor: {cost_neighbor}, weights_neighbor: {weights_neighbor}"
+                )
+                print(f"cost: {cost}, weights: {weights}")
+                print(f"cost_final: {cost_final}, weights_final: {weights_final}")"""
                 weights = np.copy(weights_neighbor)
                 cost = np.copy(cost_neighbor)
 
-                if cost < cost_final:
+                if cost > cost_final:
                     weights_final = np.copy(weights)
                     cost_final = np.copy(cost)
 
@@ -412,8 +441,6 @@ class ODT:
         error = np.sum(np.delete(count_classes, np.argmax(count_classes)))
 
         frequencies_y = np.zeros(self.n_classes)
-        # print(self.n_classes)
-        # print(frequencies_y, classes, count_classes)
         frequencies_y[classes] = count_classes
 
         n_classes = classes.shape[0]
