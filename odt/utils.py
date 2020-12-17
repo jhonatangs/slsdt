@@ -208,3 +208,8 @@ def calc_impurity(X, y, weights, criterion, frequencies_y, min_samples_leaf):
         - p1 * criterion(count_left)
         - p2 * criterion(count_right)
     )
+
+
+@njit
+def more_zeros(arr1, arr2):
+    return np.count_nonzero(arr1 == 0) > np.count_nonzero(arr2 == 0)
