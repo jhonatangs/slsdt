@@ -90,7 +90,7 @@ class SLSDT:
         self.reset = reset
         self.rng = np.random.default_rng(seed)
 
-    def fit(self, X: np.ndarray, y: np.ndarray) -> ODT:
+    def fit(self, X: np.ndarray, y: np.ndarray) -> SLSDT:
         """build a oblique decision tree classifier
 
         Arguments:
@@ -98,7 +98,7 @@ class SLSDT:
             y {numpy.ndarray} -- Original classes for fit
 
         Returns:
-            ODT: return the class
+            SLSDT: return the class
         """
 
         X, y = self.__check_X_y(X, y)
@@ -155,7 +155,7 @@ class SLSDT:
         """Set params of the class
 
         Returns:
-            ODT: return the class
+            SLSDT: return the class
         """
         for parameter, value in parametes.items():
             setattr(self, parameter, value)
