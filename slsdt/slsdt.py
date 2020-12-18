@@ -49,7 +49,7 @@ class _Node:
         self.error = error
 
 
-class ODT:
+class SLSDT:
     """A oblique decision tree using a metaheuristic for find a array of weights
     for generate virtual feature using mutiples features of database"""
 
@@ -327,9 +327,7 @@ class ODT:
     def __lahc(self, X, y, frequencies_y):
         if X.shape[0] > self.max_samples:
             random_indexes = np.random.choice(
-                X.shape[0],
-                size=self.max_samples,
-                replace=False,
+                X.shape[0], size=self.max_samples, replace=False,
             )
 
             X = np.copy(X[random_indexes])
@@ -340,12 +338,7 @@ class ODT:
         weights_final = np.copy(weights)
 
         cost = calc_impurity(
-            X,
-            y,
-            weights_final,
-            self.criterion,
-            frequencies_y,
-            self.min_samples_leaf,
+            X, y, weights_final, self.criterion, frequencies_y, self.min_samples_leaf,
         )
 
         cost_final = np.copy(cost)

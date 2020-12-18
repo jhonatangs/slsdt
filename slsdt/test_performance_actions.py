@@ -6,10 +6,10 @@ import numpy as np
 import pandas as pd
 
 from reader_csv import read_csv
-from odt import ODT
+from slsdt import SLSDT
 
 
-clfs = [DecisionTreeClassifier(), ODT()]
+clfs = [DecisionTreeClassifier(), SLSDT()]
 instances = glob.glob("instances_actions/*.csv")
 results = []
 

@@ -48,7 +48,7 @@ jobs:
     - name: Create results
       run: mkdir -p results
     - name: Performance test
-      run: python odt/test_performance_actions.py
+      run: python slsdt/test_performance_actions.py
     - uses: actions/upload-artifact@v2
       with:
         name: my-artifact
