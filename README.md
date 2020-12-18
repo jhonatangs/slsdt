@@ -1,6 +1,6 @@
-This repository is for my first scientific initiation project.
-
 # SLSDT - Stochastic Local Search Decision Tree
+
+This repository is for my first scientific initiation project.
 
 ## About
 
