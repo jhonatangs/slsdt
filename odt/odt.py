@@ -4,14 +4,13 @@ from enum import Enum
 
 import numpy as np
 
-# from sklearn.preprocessing import LabelEncoder
-
 from utils import (
     apply_weights,
     calc_impurity,
     entropy,
     gini,
     make_initial_weights,
+    more_zeros,
 )
 
 
@@ -61,7 +60,7 @@ class ODT:
         max_samples: int = 10000,
         min_samples_split: int = 4,
         min_samples_leaf: int = 7,
-        max_iterations: int = 700000,
+        max_iterations: int = 500000,
         l: int = 20,
         increase: float = 0.0,
         multiple_increase: float = 0.6,
@@ -101,8 +100,6 @@ class ODT:
         Returns:
             ODT: return the class
         """
-        # encoder = LabelEncoder()
-        # y = encoder.fit_transform(y)
 
         X, y = self.__check_X_y(X, y)
 
@@ -252,12 +249,10 @@ class ODT:
             ]
 
             value_increase = (1 - -1) * self.rng.random() + -1
-            # value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
 
             weights_neighbor[column_modified] += value_increase
 
         elif movement == _Movement.MULTIPLE_INCREASE:
-            # k = weights_neighbor.shape[0] // 2
             k = (self.k * 100) * weights_neighbor.shape[0] // 100
 
             number_columns_modified = self.rng.integers(1, k + 1)
@@ -267,22 +262,8 @@ class ODT:
                 replace=False,
             )
 
-            """try:
-                number_columns_modified = self.rng.integers(2, k + 1, size=1)[0]
-                columns_modified = self.rng.choice(
-                    weights_neighbor.shape[0] - 1,
-                    size=number_columns_modified,
-                    replace=False,
-                )
-            except ValueError:
-                number_columns_modified = 1
-                columns_modified = self.rng.integers(
-                    weights_neighbor.shape[0] - 1, size=1
-                )"""
-
             for column_modified in columns_modified:
                 value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
-                # value_increase = (1 - -1) * self.rng.random() + -1
 
                 weights_neighbor[column_modified] += value_increase
 
@@ -292,7 +273,6 @@ class ODT:
 
             for column_modified in columns_modified:
                 value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
-                # value_increase = (1 - -1) * self.rng.random() + -1
 
                 weights_neighbor[column_modified] += value_increase
 
@@ -342,13 +322,6 @@ class ODT:
 
             weights_neighbor[column_modified] = 0
 
-        """elif movement == _Movement.RESET:
-            columns_modified = np.array(list(range(weights_neighbor.shape[0] - 1)))
-
-            for column_modified in columns_modified:
-
-                weights_neighbor[column_modified] = 0"""
-
         return weights_neighbor
 
     def __lahc(self, X, y, frequencies_y):
@@ -382,10 +355,7 @@ class ODT:
         iteration, v = 0, 0
 
         while iteration < self.max_iterations:
-            # weights_neighbor = self.__make_movement(weights, self.__build_movement())
-            movement = self.__build_movement()
-            # print(movement)
-            weights_neighbor = self.__make_movement(weights, movement)
+            weights_neighbor = self.__make_movement(weights, self.__build_movement())
 
             cost_neighbor = calc_impurity(
                 X,
@@ -397,17 +367,16 @@ class ODT:
             )
 
             if cost_neighbor >= cost or cost_neighbor >= costs[v]:
-                """print(
-                    f"cost_neighbor: {cost_neighbor}, weights_neighbor: {weights_neighbor}"
-                )
-                print(f"cost: {cost}, weights: {weights}")
-                print(f"cost_final: {cost_final}, weights_final: {weights_final}")"""
                 weights = np.copy(weights_neighbor)
                 cost = np.copy(cost_neighbor)
 
                 if cost > cost_final:
                     weights_final = np.copy(weights)
                     cost_final = np.copy(cost)
+                elif cost == cost_final:
+                    if more_zeros(weights, weights_final):
+                        weights_final = np.copy(weights)
+                        cost_final = np.copy(cost)
 
             costs[v] = cost
             v = (v + 1) % self.l
@@ -432,7 +401,6 @@ class ODT:
         )
 
     def __make_tree(self, X, y, depth=1):
-        # print(depth)
         if X.shape[0] == 0 or y.shape[0] == 0:
             return _Node()
 
@@ -447,7 +415,6 @@ class ODT:
 
         if not self.__stopping_criterion(n_classes, depth, X.shape[0]):
             weights, _ = self.__lahc(X, y, frequencies_y)
-            # print(weights)
 
             split = np.array([apply_weights(record, weights) > 0 for record in X])
 
@@ -512,13 +479,3 @@ class ODT:
             y_pred[~split] = self.__classify(node.children_right, X[~split])
 
         return y_pred
-
-
-if __name__ == "__main__":
-    pass
-    # from reader_csv import read_csv
-
-    # X, y = read_csv("../instances_actions/iris.csv", "class")
-    # clf = ODT()
-    # clf.fit(X, y)
-    # print(clf.predict(X) == y)
