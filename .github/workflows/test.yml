@@ -19,7 +19,7 @@ jobs:
             - name: lint with black
               run: black slsdt/reader_csv.py slsdt/utils.py slsdt/slsdt.py --check
             - name: lint with flake8
-              run: flake8 slsdt --select=F401,E9,F63,F7,F82
+              run: flake8 slsdt/reader_csv.py slsdt/utils.py slsdt/slsdt.py --select=F401,E9,F63,F7,F82
 
     test-performance:
         runs-on: ${{ matrix.os }}
