@@ -5,10 +5,11 @@ from sklearn.tree import DecisionTreeClassifier
 import numpy as np
 import pandas as pd
 
-from slsdt.slsdt import SLSDT
 
 import os
+import path
 
+print(os.listdir())
 print(os.getcwd())
 print(glob.glob("./*.py"))
 print(glob.glob("./slsdt/*.py"))
