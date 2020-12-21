@@ -1,7 +1,3 @@
-import os
-
-print(os.getcwd())
-
 import glob
 
 from sklearn.model_selection import cross_val_score, StratifiedKFold
@@ -9,8 +5,8 @@ from sklearn.tree import DecisionTreeClassifier
 import numpy as np
 import pandas as pd
 
-from slsdt.reader_csv import read_csv
-from slsdt.slsdt import SLSDT
+from .slsdt.slsdt.reader_csv import read_csv
+from .slsdt.slsdt.slsdt import SLSDT
 
 
 clfs = [DecisionTreeClassifier(), SLSDT()]
