@@ -4,7 +4,7 @@ from enum import Enum
 
 import numpy as np
 
-from .utils import (
+from utils import (
     apply_weights,
     calc_impurity,
     entropy,
