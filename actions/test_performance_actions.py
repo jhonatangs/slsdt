@@ -9,4 +9,4 @@ import os
 
 print(os.getcwd())
 print(glob.glob("./*.py"))
-print(glob.glob("./*.csv"))
+print(glob.glob("./slsdt/*.py"))
