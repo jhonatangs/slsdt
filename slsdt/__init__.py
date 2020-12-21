@@ -1,2 +1,2 @@
-from .slsdt import SLSDT
-from .reader_csv import read_csv
+from slsdt.slsdt import SLSDT
+from slsdt.reader_csv import read_csv
