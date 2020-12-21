@@ -5,6 +5,8 @@ from sklearn.tree import DecisionTreeClassifier
 import numpy as np
 import pandas as pd
 
+from .slsdt.slsdt import slsdt
+
 import os
 
 print(os.getcwd())
