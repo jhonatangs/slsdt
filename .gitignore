@@ -1,7 +1,7 @@
 .venv/
+.vscode
 artifacts_article/
 instances_tests/
-setup.py
 smac/
 slsdt/.mypy_cache
 slsdt/__pycache__

@@ -5,8 +5,8 @@ from sklearn.tree import DecisionTreeClassifier
 import numpy as np
 import pandas as pd
 
-from reader_csv import read_csv
-from slsdt import SLSDT
+from ..slsdt.reader_csv import read_csv
+from ..slsdt.slsdt import SLSDT
 
 
 clfs = [DecisionTreeClassifier(), SLSDT()]

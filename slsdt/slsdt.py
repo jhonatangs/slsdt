@@ -4,7 +4,7 @@ from enum import Enum
 
 import numpy as np
 
-from utils import (
+from .utils import (
     apply_weights,
     calc_impurity,
     entropy,
@@ -15,7 +15,8 @@ from utils import (
 
 
 class _Movement(Enum):
-    """Represent a movement to generete a neighbors in a solution of the
+    """
+    Represent a movement to generete a neighbors in a solution of the
     metaheuristic
     """
 
@@ -50,8 +51,10 @@ class _Node:
 
 
 class SLSDT:
-    """A oblique decision tree using a metaheuristic for find a array of weights
-    for generate virtual feature using mutiples features of database"""
+    """
+    A oblique decision tree using LAHC heuristic for find best split in
+    each node of the tree
+    """
 
     def __init__(
         self,
@@ -91,7 +94,8 @@ class SLSDT:
         self.rng = np.random.default_rng(seed)
 
     def fit(self, X: np.ndarray, y: np.ndarray) -> SLSDT:
-        """build a oblique decision tree classifier
+        """
+        build a oblique decision tree classifier
 
         Arguments:
             X {numpy.ndarray} -- Original dataset for fit
@@ -116,7 +120,8 @@ class SLSDT:
         return self
 
     def predict(self, X: np.ndarray) -> np.ndarray:
-        """predict classes of the data
+        """
+        predict classes of the data
 
         Args:
             X (numpy.ndarray): data to be predict
@@ -127,7 +132,8 @@ class SLSDT:
         return self.__classify(self.tree, X)
 
     def get_params(self, deep=True):
-        """get params of the class
+        """
+        get params of the class
         Args:
             deep (bool, optional): Defaults to True.
         Returns:
@@ -152,7 +158,8 @@ class SLSDT:
         }
 
     def set_params(self, **parametes):
-        """Set params of the class
+        """
+        Set params of the class
 
         Returns:
             SLSDT: return the class
@@ -164,7 +171,8 @@ class SLSDT:
 
     @staticmethod
     def __check_X_y(X, y):
-        """checks if the data set is in the correct shape
+        """
+        checks if the data set is in the correct shape
 
         Arguments:
             X {numpy.ndarray} -- original dataset
@@ -231,7 +239,8 @@ class SLSDT:
             return self.percentage_movements[6][0]
 
     def __make_movement(self, weights, movement):
-        """makes a movement in weights, generating a neighbor
+        """
+        makes a movement in weights, generating a neighbor
 
         Arguments:
             weights {numpy.ndarray} -- array of the weights
@@ -385,7 +394,8 @@ class SLSDT:
         return weights_final, cost_final
 
     def __stopping_criterion(self, n_classes, depth, samples_node):
-        """criterion if the tree growth should be stopped
+        """
+        criterion if the tree growth should be stopped
 
         Args:
             n_classes (int): number of classes in the node
