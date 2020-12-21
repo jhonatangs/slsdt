@@ -15,7 +15,7 @@ from reader_csv import read_csv
 
 
 clfs = [DecisionTreeClassifier(), SLSDT()]
-instances = glob.glob("instances_actions/*.csv")
+instances = glob.glob("actions/*.csv")
 results = []
 
 for instance in instances:
