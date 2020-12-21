@@ -44,6 +44,8 @@ jobs:
               run: pip install -r requirements.txt
             - name: Create results
               run: mkdir -p results
+            - name: Test dir
+              run: python -c "import os; print(os.getcwd())"
             - name: Performance test
               run: python actions/test_performance_actions.py
             - uses: actions/upload-artifact@v2
