@@ -7,7 +7,6 @@ import pandas as pd
 
 
 import os
-import path
 
 print(os.listdir())
 print(os.getcwd())
