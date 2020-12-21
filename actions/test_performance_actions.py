@@ -5,7 +5,11 @@ from sklearn.tree import DecisionTreeClassifier
 import numpy as np
 import pandas as pd
 
-from .slsdt.slsdt.slsdt import SLSDT
+import sys
+
+sys.path.insert(1, "/home/runner/work/slsdt/slsdt/slsdt")
+
+from slsdt import SLSDT
 
 
 import os
