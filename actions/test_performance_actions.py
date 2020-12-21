@@ -1,3 +1,7 @@
+import os
+
+print(os.getcwd())
+
 import glob
 
 from sklearn.model_selection import cross_val_score, StratifiedKFold
