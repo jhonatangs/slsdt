@@ -6,7 +6,8 @@ from sklearn.preprocessing import LabelEncoder
 
 
 def read_csv(file: str, class_index: str) -> Tuple[np.ndarray, np.ndarray]:
-    """Reads a database in csv file format performing pre-processing. Returning
+    """
+    Reads a database in csv file format performing pre-processing. Returning
     datas and classes separately.
 
     Args:

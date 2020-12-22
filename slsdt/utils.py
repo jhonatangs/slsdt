@@ -6,7 +6,8 @@ from numba import njit
 
 @njit
 def entropy(count_labels):
-    """calculates of the entropy (impurity criterion) in the current node
+    """
+    calculates of the entropy (impurity criterion) in the current node
     Arguments:
         classes {numpy.ndarray} -- number of occurrences of each class in the
         current node
@@ -20,7 +21,8 @@ def entropy(count_labels):
 
 @njit
 def gini(count_labels):
-    """calculates of the gini (impurity criterion) in the current node
+    """
+    calculates of the gini (impurity criterion) in the current node
 
     Arguments:
         classes {numpy.ndarray} -- number of occurrences of each class in the
@@ -35,7 +37,8 @@ def gini(count_labels):
 
 @njit
 def best_in_column(X, y, index, criterion, frequencies_y):
-    """Return the best impurity in column selected using the impurity
+    """
+    Return the best impurity in column selected using the impurity
     criterion specified.
 
     Arguments:
@@ -103,7 +106,8 @@ def best_in_column(X, y, index, criterion, frequencies_y):
 
 @njit
 def best_split(X, y, criterion, frequencies_y):
-    """Search for the best point for tree division
+    """
+    Search for the best point for tree division
 
     Args:
         X (numpy.ndarray): Data
@@ -132,7 +136,8 @@ def best_split(X, y, criterion, frequencies_y):
 
 @njit
 def make_initial_weights(X, y, criterion, frequencies_y):
-    """Make a initial solution of the weights for metaheuristic
+    """
+    Make a initial solution of the weights for metaheuristic
 
     Args:
         X (numpy.ndarray): Data
@@ -169,7 +174,8 @@ def apply_weights(record, weights):
 
 @njit
 def calc_impurity(X, y, weights, criterion, frequencies_y, min_samples_leaf):
-    """calculates the impurity applying the weights in the data
+    """
+    calculates the impurity applying the weights in the data
 
     Args:
         X (numpy.ndarray): Data

@@ -4,7 +4,7 @@ from enum import Enum
 
 import numpy as np
 
-from utils import (
+from slsdt.utils import (
     apply_weights,
     calc_impurity,
     entropy,
@@ -64,6 +64,7 @@ class SLSDT:
         min_samples_split: int = 4,
         min_samples_leaf: int = 7,
         max_iterations: int = 500000,
+        max_features: float = 0.75,
         l: int = 20,
         increase: float = 0.0,
         multiple_increase: float = 0.6,
@@ -82,6 +83,7 @@ class SLSDT:
         self.min_samples_split = min_samples_split
         self.min_samples_leaf = min_samples_leaf
         self.max_iterations = max_iterations
+        self.max_features = max_features
         self.l = l
         self.increase = increase
         self.multiple_increase = multiple_increase
@@ -146,6 +148,7 @@ class SLSDT:
             "min_samples_split": self.min_samples_split,
             "min_samples_leaf": self.min_samples_leaf,
             "max_iterations": self.max_iterations,
+            "max_features": self.max_features,
             "l": self.l,
             "increase": self.increase,
             "multiple_increase": self.multiple_increase,
@@ -262,7 +265,7 @@ class SLSDT:
             weights_neighbor[column_modified] += value_increase
 
         elif movement == _Movement.MULTIPLE_INCREASE:
-            k = (self.k * 100) * weights_neighbor.shape[0] // 100
+            k = (self.k * 100 * weights_neighbor.shape[0]) // 100
 
             number_columns_modified = self.rng.integers(1, k + 1)
             columns_modified = self.rng.choice(
@@ -334,6 +337,18 @@ class SLSDT:
         return weights_neighbor
 
     def __lahc(self, X, y, frequencies_y):
+        """
+        LAHC heuristic for search best oblique split in each node of the tree
+
+        Args:
+            X (numpy.ndarray): recordset
+            y (numpy.ndarray): class labels
+            frequencies_y (numpy.ndarray): quantity of each class label in the node
+
+        Returns:
+            Tuple[numpy.ndarray, float]: solution containing weights final and
+            impurity final
+        """
         if X.shape[0] > self.max_samples:
             random_indexes = np.random.choice(
                 X.shape[0],
@@ -411,6 +426,16 @@ class SLSDT:
         )
 
     def __make_tree(self, X, y, depth=1):
+        """recursive function to make tree
+
+        Args:
+            X (numpy.ndarray): recordset
+            y (numpy.ndarray): class labels
+            depth (int, optional): profundidade do nó. Defaults to 1.
+
+        Returns:
+            Node: node of the tree
+        """
         if X.shape[0] == 0 or y.shape[0] == 0:
             return _Node()
 
@@ -424,6 +449,15 @@ class SLSDT:
         n_classes = classes.shape[0]
 
         if not self.__stopping_criterion(n_classes, depth, X.shape[0]):
+            if self.max_features:
+                number_features = (self.max_features * 100 * X.shape[1]) // 100
+                features_selected = self.rng.choice(
+                    X.shape[1],
+                    size=number_features,
+                    replace=False,
+                )
+                X = np.copy(X[:, features_selected])
+
             weights, _ = self.__lahc(X, y, frequencies_y)
 
             split = np.array([apply_weights(record, weights) > 0 for record in X])
@@ -450,6 +484,14 @@ class SLSDT:
         return _Node(is_leaf=True, results=frequencies_y, error=error)
 
     def __prune(self, tree):
+        """pruning the tree
+
+        Args:
+            tree (SLSDT): tree before being pruned
+
+        Returns:
+            SLSDT: tree after pruned
+        """
         if tree.is_leaf:
             return tree.error
 
