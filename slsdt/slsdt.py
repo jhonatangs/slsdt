@@ -4,7 +4,7 @@ from enum import Enum
 
 import numpy as np
 
-from .utils import (
+from utils import (
     apply_weights,
     calc_impurity,
     entropy,
@@ -451,13 +451,13 @@ class SLSDT:
 
         if not self.__stopping_criterion(n_classes, depth, X.shape[0]):
             """if self.max_features:
-                number_features = (self.max_features * 100 * X.shape[1]) // 100
-                features_selected = self.rng.choice(
-                    X.shape[1],
-                    size=number_features,
-                    replace=False,
-                )
-                X = np.copy(X[:, features_selected])"""
+            number_features = (self.max_features * 100 * X.shape[1]) // 100
+            features_selected = self.rng.choice(
+                X.shape[1],
+                size=number_features,
+                replace=False,
+            )
+            X = np.copy(X[:, features_selected])"""
 
             weights, _ = self.__lahc(X, y, frequencies_y)
 
