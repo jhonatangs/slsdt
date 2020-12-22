@@ -65,7 +65,6 @@ class SLSDT:
         min_samples_split: int = 4,
         min_samples_leaf: int = 7,
         max_iterations: int = 500000,
-        max_features: float = 0.75,
         l: int = 20,
         increase: float = 0.0,
         multiple_increase: float = 0.6,
@@ -84,7 +83,6 @@ class SLSDT:
         self.min_samples_split = min_samples_split
         self.min_samples_leaf = min_samples_leaf
         self.max_iterations = max_iterations
-        self.max_features = max_features
         self.l = l
         self.increase = increase
         self.multiple_increase = multiple_increase
@@ -149,7 +147,6 @@ class SLSDT:
             "min_samples_split": self.min_samples_split,
             "min_samples_leaf": self.min_samples_leaf,
             "max_iterations": self.max_iterations,
-            "max_features": self.max_features,
             "l": self.l,
             "increase": self.increase,
             "multiple_increase": self.multiple_increase,
@@ -450,15 +447,6 @@ class SLSDT:
         n_classes = classes.shape[0]
 
         if not self.__stopping_criterion(n_classes, depth, X.shape[0]):
-            """if self.max_features:
-            number_features = (self.max_features * 100 * X.shape[1]) // 100
-            features_selected = self.rng.choice(
-                X.shape[1],
-                size=number_features,
-                replace=False,
-            )
-            X = np.copy(X[:, features_selected])"""
-
             weights, _ = self.__lahc(X, y, frequencies_y)
 
             split = np.array([apply_weights(record, weights) > 0 for record in X])
