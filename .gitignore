@@ -6,3 +6,4 @@ smac/
 slsdt/.mypy_cache
 slsdt/__pycache__
 slsdt/test.py
+slsdt.egg-info/

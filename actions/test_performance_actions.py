@@ -1,8 +1,3 @@
-import sys
-
-sys.path.insert(1, "/home/runner/work/slsdt/slsdt/slsdt")
-
-
 import glob
 
 from sklearn.model_selection import cross_val_score, StratifiedKFold
@@ -10,8 +5,8 @@ from sklearn.tree import DecisionTreeClassifier
 import numpy as np
 import pandas as pd
 
-from slsdt import SLSDT
-from reader_csv import read_csv
+from slsdt.slsdt import SLSDT
+from slsdt.reader_csv import read_csv
 
 
 clfs = [DecisionTreeClassifier(), SLSDT()]

@@ -3,7 +3,7 @@ import os
 import sys
 from shutil import rmtree
 
-from setuptools import setup, Command
+from setuptools import setup, Command, find_packages
 
 NAME = "slsdt"
 DESCRIPTION = "Oblique decision tree using the LAHC heuristic. "
@@ -79,13 +79,14 @@ setup(
         "Oblique Decision Tree",
         "Machine Learning",
         "Classification",
+        "Heuristic",
         "Optimization",
     ],
     author=AUTHORS,
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    py_modules=["slsdt"],
+    packages=find_packages(),
     install_requires=REQUIRED,
     include_package_data=True,
     license="EPL-2.0",
@@ -94,6 +95,7 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
+        "Topic :: Software Development :: Libraries",
     ],
     # $ setup.py publish support.
     cmdclass={
