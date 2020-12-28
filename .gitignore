@@ -5,3 +5,4 @@ instances_tests/
 smac/
 slsdt/.mypy_cache
 slsdt/__pycache__
+slsdt/test.py

@@ -348,7 +348,7 @@ class SLSDT:
             impurity final
         """
         if X.shape[0] > self.max_samples:
-            random_indexes = np.random.choice(
+            random_indexes = self.rng.choice(
                 X.shape[0],
                 size=self.max_samples,
                 replace=False,
