@@ -40,6 +40,7 @@ jobs:
               run: python -m pip install --upgrade pip
             - name: Install dependencies
               run: pip install -r requirements.txt
+            - name: Install slsdt
               run: pip install -e .
             - name: Create results
               run: mkdir -p results

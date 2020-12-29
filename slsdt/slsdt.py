@@ -169,6 +169,9 @@ class SLSDT:
 
         return self
 
+    def print_tree(self):
+        self.__aux_print_tree(self.tree, 1)
+
     @staticmethod
     def __check_X_y(X, y):
         """
@@ -519,3 +522,15 @@ class SLSDT:
             y_pred[~split] = self.__classify(node.children_right, X[~split])
 
         return y_pred
+
+    def __aux_print_tree(self, node, depth):
+        print(depth * " ", end="")
+        if node.is_leaf:
+            print(f"Predict: {node.results}")
+        else:
+            print(f"Weights: {node.weights}")
+
+        if node.children_left:
+            self.__aux_print_tree(node.children_left, depth + 1)
+        if node.children_right:
+            self.__aux_print_tree(node.children_right, depth + 1)
