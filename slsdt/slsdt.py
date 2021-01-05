@@ -51,7 +51,7 @@ class SLSDT:
         max_samples: int = 10000,
         min_samples_split: int = 4,
         min_samples_leaf: int = 7,
-        max_iterations: int = 500000,
+        max_iterations: int = 1000000,
         l: int = 20,
         increase: float = 0.7,
         jump: float = 0.3,
