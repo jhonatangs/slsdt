@@ -6,14 +6,6 @@ from numba import njit
 
 @njit
 def entropy(count_labels):
-    """
-    calculates of the entropy (impurity criterion) in the current node
-    Arguments:
-        classes {numpy.ndarray} -- number of occurrences of each class in the
-        current node
-    Returns:
-        float -- entropy calculated
-    """
     aux_entropy = lambda x: x * np.log2(x)
 
     return -np.sum(aux_entropy(count_labels[count_labels != 0] / np.sum(count_labels)))
@@ -21,37 +13,11 @@ def entropy(count_labels):
 
 @njit
 def gini(count_labels):
-    """
-    calculates of the gini (impurity criterion) in the current node
-
-    Arguments:
-        classes {numpy.ndarray} -- number of occurrences of each class in the
-        current node
-
-    Returns:
-        float -- gini calculated
-    """
-
     return 1 - np.sum(np.square(count_labels / np.sum(count_labels)))
 
 
 @njit
 def best_in_column(X, y, index, criterion, frequencies_y):
-    """
-    Return the best impurity in column selected using the impurity
-    criterion specified.
-
-    Arguments:
-        X {numpy.ndarray} -- dataset for to evaluate the best impurity
-        y {numpy.ndarray} -- classes for to evaluate the best impurity
-        index {int} -- Index of the column to be analyzed
-        criterion {str} -- impurity criterion ("entropy" or "gini")
-        classes_ {numpy.ndarray} -- Unique classes
-
-    Returns:
-        Tuple -- A tuple containing of the best threshold value and the best
-        impurity value
-    """
     best_impurity = -math.inf
     best_threshold = None
     n_samples = X.shape[0]
@@ -106,19 +72,6 @@ def best_in_column(X, y, index, criterion, frequencies_y):
 
 @njit
 def best_split(X, y, criterion, frequencies_y):
-    """
-    Search for the best point for tree division
-
-    Args:
-        X (numpy.ndarray): Data
-        y (numpy.ndarray): Classes
-        criterion (str): impurity criterion to be used (entropy/gini)
-        classes_ (numpy.ndarray): each classes containing in the node
-
-    Returns:
-        Tuple[int, float]: a tuple containing index and value of the
-        best cut point
-    """
     best_index, best_threshold, best_impurity = (
         -1,
         None,
@@ -136,19 +89,6 @@ def best_split(X, y, criterion, frequencies_y):
 
 @njit
 def make_initial_weights(X, y, criterion, frequencies_y):
-    """
-    Make a initial solution of the weights for metaheuristic
-
-    Args:
-        X (numpy.ndarray): Data
-        y (numpy.ndarray): class labels
-        criterion (function): impurity function
-        frequencies_y (numpy.ndarray): frequencies of each class in the
-            original database
-
-    Returns:
-        numpy.ndarray: weights representing a initial solution
-    """
     best_index, best_threshold = best_split(X, y, criterion, frequencies_y)
 
     weights = np.zeros(X.shape[1] + 1)
@@ -160,34 +100,11 @@ def make_initial_weights(X, y, criterion, frequencies_y):
 
 @njit
 def apply_weights(record, weights):
-    """apply the weights in a line of the database and sum with value of the split
-
-    Args:
-        record (numpy.ndarray): record of the database
-        weights (numpy.ndarray): array of the weights
-
-    Returns:
-        double: value for make split of the tree
-    """
     return np.sum(np.multiply(record, weights[:-1])) + weights[-1]
 
 
 @njit
 def calc_impurity(X, y, weights, criterion, frequencies_y, min_samples_leaf):
-    """
-    calculates the impurity applying the weights in the data
-
-    Args:
-        X (numpy.ndarray): Data
-        y (numpy.ndarray): class labels
-        weights (numpy.ndarray): array of the weights
-        criterion (function): impurity function
-        frequencies_y (numpy.ndarray): frequencies of each class in the
-            original database
-
-    Returns:
-        [type]: [description]
-    """
     count_left = np.zeros_like(frequencies_y)
     count_right = np.zeros_like(frequencies_y)
 

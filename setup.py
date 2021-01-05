@@ -97,6 +97,8 @@ setup(
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
         "Topic :: Software Development :: Libraries",
     ],
+    use_scm_version={"write_to": "slsdt/__version__.py"},
+    setup_requires=["setuptools_scm"],
     # $ setup.py publish support.
     cmdclass={
         "upload": UploadCommand,

@@ -14,24 +14,12 @@ from slsdt.utils import (
 )
 
 
-class _Movement(Enum):
-    """
-    Represent a movement to generete a neighbors in a solution of the
-    metaheuristic
-    """
-
+class Movement(Enum):
     INCREASE = 1
-    MULTIPLE_INCREASE = 2
-    JUMP = 3
-    PERCENTAGE_INCREASE = 4
-    PERCENTAGE_DECREASE = 5
-    SWAP = 6
-    RESET = 7
+    JUMP = 2
 
 
-class _Node:
-    """Represents a node in a decision tree"""
-
+class Node:
     def __init__(
         self,
         weights=np.empty(0),
@@ -65,14 +53,9 @@ class SLSDT:
         min_samples_leaf: int = 7,
         max_iterations: int = 500000,
         l: int = 20,
-        increase: float = 0.0,
-        multiple_increase: float = 0.6,
-        k: float = 0.75,
+        increase: float = 0.7,
         jump: float = 0.3,
-        percentage_increase: float = 0.0,
-        percentage_decrease: float = 0.0,
-        swap: float = 0.0,
-        reset: float = 0.1,
+        max_iterations_movement: int = 10,
         seed: int = 42,
     ):
 
@@ -84,13 +67,8 @@ class SLSDT:
         self.max_iterations = max_iterations
         self.l = l
         self.increase = increase
-        self.multiple_increase = multiple_increase
-        self.k = k
         self.jump = jump
-        self.percentage_increase = percentage_increase
-        self.percentage_decrease = percentage_decrease
-        self.swap = swap
-        self.reset = reset
+        self.max_iterations_movement = max_iterations_movement
         self.rng = np.random.default_rng(seed)
 
     def fit(self, X: np.ndarray, y: np.ndarray) -> SLSDT:
@@ -98,11 +76,11 @@ class SLSDT:
         build a oblique decision tree classifier
 
         Arguments:
-            X {numpy.ndarray} -- Original dataset for fit
-            y {numpy.ndarray} -- Original classes for fit
+            X {numpy.ndarray} -- records for training
+            y {numpy.ndarray} -- class labels for training
 
         Returns:
-            SLSDT: return the class
+            SLSDT: return the classifier
         """
 
         X, y = self.__check_X_y(X, y)
@@ -121,19 +99,20 @@ class SLSDT:
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         """
-        predict classes of the data
+        predict unknown class labels
 
         Args:
             X (numpy.ndarray): data to be predict
 
         Returns:
-            numpy.ndarray: classes predicted of the data
+            numpy.ndarray: class labels predicted
         """
         return self.__classify(self.tree, X)
 
     def get_params(self, deep=True):
         """
         get params of the class
+
         Args:
             deep (bool, optional): Defaults to True.
         Returns:
@@ -148,13 +127,8 @@ class SLSDT:
             "max_iterations": self.max_iterations,
             "l": self.l,
             "increase": self.increase,
-            "multiple_increase": self.multiple_increase,
-            "k": self.k,
             "jump": self.jump,
-            "percentage_increase": self.percentage_increase,
-            "percentage_decrease": self.percentage_decrease,
-            "swap": self.swap,
-            "reset": self.reset,
+            "max_iterations_movement": self.max_iterations_movement,
         }
 
     def set_params(self, **parametes):
@@ -162,7 +136,7 @@ class SLSDT:
         Set params of the class
 
         Returns:
-            SLSDT: return the class
+            SLSDT: return the classifier
         """
         for parameter, value in parametes.items():
             setattr(self, parameter, value)
@@ -170,24 +144,12 @@ class SLSDT:
         return self
 
     def print_tree(self):
+        """prints the decision tree built"""
+
         self.__aux_print_tree(self.tree, 1)
 
     @staticmethod
     def __check_X_y(X, y):
-        """
-        checks if the data set is in the correct shape
-
-        Arguments:
-            X {numpy.ndarray} -- original dataset
-            y {numpy.ndarray} -- original classes
-
-        Raises:
-            ValueError: If the dataset is empty
-            ValueError: If the dataset is incorrect shape
-
-        Returns:
-            Tuple(numpy.ndarray, numpy.ndarray) -- return samples and classes if shape is correct
-        """
         if len(X) <= 0 or len(y) <= 0:
             raise ValueError("Empty Database!")
         if len(np.shape(X)) != 2 or len(np.shape(y)) != 1:
@@ -196,16 +158,9 @@ class SLSDT:
         return X, y
 
     def __calc_percentage_movements(self):
-        """calculates the percentage of each movement"""
-
         self.percentage_movements = [
-            (_Movement.INCREASE, self.increase),
-            (_Movement.MULTIPLE_INCREASE, self.multiple_increase),
-            (_Movement.JUMP, self.jump),
-            (_Movement.PERCENTAGE_INCREASE, self.percentage_increase),
-            (_Movement.PERCENTAGE_DECREASE, self.percentage_decrease),
-            (_Movement.SWAP, self.swap),
-            (_Movement.RESET, self.reset),
+            (Movement.INCREASE, self.increase),
+            (Movement.JUMP, self.jump),
         ]
 
         self.percentage_movements = sorted(
@@ -222,133 +177,74 @@ class SLSDT:
             self.percentages_transform[i] += self.percentages_transform[i - 1]
 
     def __build_movement(self):
-        """build a random movement using percentages of each movement"""
-
         x = self.rng.random()
 
         if x <= self.percentages_transform[0]:
             return self.percentage_movements[0][0]
-        elif x <= self.percentages_transform[1]:
-            return self.percentage_movements[1][0]
-        elif x <= self.percentages_transform[2]:
-            return self.percentage_movements[2][0]
-        elif x <= self.percentages_transform[3]:
-            return self.percentage_movements[3][0]
-        elif x <= self.percentages_transform[4]:
-            return self.percentage_movements[4][0]
-        elif x <= self.percentages_transform[5]:
-            return self.percentage_movements[5][0]
         else:
-            return self.percentage_movements[6][0]
+            return self.percentage_movements[1][0]
 
-    def __make_movement(self, weights, movement):
-        """
-        makes a movement in weights, generating a neighbor
+    def __make_movement(self, weights, movement, X, y, frequencies_y):
+        weights = np.copy(weights)
 
-        Arguments:
-            weights {numpy.ndarray} -- array of the weights
-            movement {Movement} -- The movement to be applied in the weights array
+        """cost = calc_impurity(
+            X, y, weights, self.criterion, frequencies_y, self.min_samples_leaf
+        )"""
 
-        Returns:
-            numpy.ndarray -- Weights with movement applied
-        """
-
-        weights_neighbor = np.copy(weights)
-
-        if movement == _Movement.INCREASE:
-            column_modified = self.rng.integers(weights_neighbor.shape[0] - 1, size=1)[
-                0
-            ]
-
+        if movement == Movement.INCREASE:
+            column_modified = self.rng.integers(weights.shape[0], size=1)[0]
             value_increase = (1 - -1) * self.rng.random() + -1
+            weights[column_modified] += value_increase
+            """column_modified = self.rng.integers(weights.shape[0], size=1)[0]
 
-            weights_neighbor[column_modified] += value_increase
+            for _ in range(self.max_iterations_movement):
+                weights_neighbor = np.copy(weights)
 
-        elif movement == _Movement.MULTIPLE_INCREASE:
-            k = (self.k * 100 * weights_neighbor.shape[0]) // 100
-
-            number_columns_modified = self.rng.integers(1, k + 1)
-            columns_modified = self.rng.choice(
-                weights_neighbor.shape[0] - 1,
-                size=number_columns_modified,
-                replace=False,
-            )
-
-            for column_modified in columns_modified:
-                value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
+                value_increase = (1 - -1) * self.rng.random() + -1
 
                 weights_neighbor[column_modified] += value_increase
 
-        elif movement == _Movement.JUMP:
+                if (
+                    calc_impurity(
+                        X,
+                        y,
+                        weights_neighbor,
+                        self.criterion,
+                        frequencies_y,
+                        self.min_samples_leaf,
+                    )
+                    > cost
+                ):
+                    weights = np.copy(weights_neighbor)"""
 
-            columns_modified = np.array(list(range(weights_neighbor.shape[0] - 1)))
+        elif movement == Movement.JUMP:
+            for i in range(weights.shape[0]):
+                value_increase = (1 - -1) * self.rng.random() + -1
+                weights[i] += value_increase
+            """for _ in range(self.max_iterations_movement):
+                weights_neighbor = np.copy(weights)
 
-            for column_modified in columns_modified:
-                value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
+                for i in range(weights.shape[0]):
+                    value_increase = (1 - -1) * self.rng.random() + -1
 
-                weights_neighbor[column_modified] += value_increase
+                    weights_neighbor[i] += value_increase
 
-        elif movement == _Movement.PERCENTAGE_INCREASE:
-            column_modified = self.rng.integers(weights_neighbor.shape[0] - 1, size=1)[
-                0
-            ]
+                if (
+                    calc_impurity(
+                        X,
+                        y,
+                        weights_neighbor,
+                        self.criterion,
+                        frequencies_y,
+                        self.min_samples_leaf,
+                    )
+                    > cost
+                ):
+                    weights = np.copy(weights_neighbor)"""
 
-            percentage_increase = self.rng.random()
-
-            weights_neighbor[column_modified] += percentage_increase * abs(
-                weights_neighbor[column_modified]
-            )
-
-        elif movement == _Movement.PERCENTAGE_DECREASE:
-            column_modified = self.rng.integers(weights_neighbor.shape[0] - 1, size=1)[
-                0
-            ]
-
-            percentage_decrease = self.rng.random()
-
-            weights_neighbor[column_modified] -= percentage_decrease * abs(
-                weights_neighbor[column_modified]
-            )
-
-        elif movement == _Movement.SWAP:
-            column_modified = self.rng.integers(weights_neighbor.shape[0] - 1, size=1)[
-                0
-            ]
-
-            column_swap = self.rng.integers(weights_neighbor.shape[0] - 1, size=1)[0]
-
-            while column_swap == column_modified:
-                column_swap = self.rng.integers(weights_neighbor.shape[0] - 1, size=1)[
-                    0
-                ]
-
-            (weights_neighbor[column_modified], weights_neighbor[column_swap],) = (
-                np.copy(weights_neighbor[column_swap]),
-                np.copy(weights_neighbor[column_modified]),
-            )
-
-        elif movement == _Movement.RESET:
-            column_modified = self.rng.integers(weights_neighbor.shape[0] - 1, size=1)[
-                0
-            ]
-
-            weights_neighbor[column_modified] = 0
-
-        return weights_neighbor
+        return weights
 
     def __lahc(self, X, y, frequencies_y):
-        """
-        LAHC heuristic for search best oblique split in each node of the tree
-
-        Args:
-            X (numpy.ndarray): recordset
-            y (numpy.ndarray): class labels
-            frequencies_y (numpy.ndarray): quantity of each class label in the node
-
-        Returns:
-            Tuple[numpy.ndarray, float]: solution containing weights final and
-            impurity final
-        """
         if X.shape[0] > self.max_samples:
             random_indexes = self.rng.choice(
                 X.shape[0],
@@ -379,7 +275,9 @@ class SLSDT:
         iteration, v = 0, 0
 
         while iteration < self.max_iterations:
-            weights_neighbor = self.__make_movement(weights, self.__build_movement())
+            weights_neighbor = self.__make_movement(
+                weights, self.__build_movement(), X, y, frequencies_y
+            )
 
             cost_neighbor = calc_impurity(
                 X,
@@ -409,16 +307,6 @@ class SLSDT:
         return weights_final, cost_final
 
     def __stopping_criterion(self, n_classes, depth, samples_node):
-        """
-        criterion if the tree growth should be stopped
-
-        Args:
-            n_classes (int): number of classes in the node
-            depth (int): max size of the tree
-
-        Returns:
-            bool: return if growth should be stopped or not
-        """
         return (
             self.max_depth == depth
             or n_classes == 1
@@ -426,18 +314,8 @@ class SLSDT:
         )
 
     def __make_tree(self, X, y, depth=1):
-        """recursive function to make tree
-
-        Args:
-            X (numpy.ndarray): recordset
-            y (numpy.ndarray): class labels
-            depth (int, optional): profundidade do nó. Defaults to 1.
-
-        Returns:
-            Node: node of the tree
-        """
         if X.shape[0] == 0 or y.shape[0] == 0:
-            return _Node()
+            return Node()
 
         classes, count_classes = np.unique(y, return_counts=True)
 
@@ -459,12 +337,12 @@ class SLSDT:
                 or np.sum(split) <= 0
                 or np.sum(~split) <= 0
             ):
-                return _Node(is_leaf=True, results=frequencies_y, error=error)
+                return Node(is_leaf=True, results=frequencies_y, error=error)
 
             left = self.__make_tree(X[split], y[split], depth + 1)
             right = self.__make_tree(X[~split], y[~split], depth + 1)
 
-            return _Node(
+            return Node(
                 weights=weights,
                 children_left=left,
                 children_right=right,
@@ -472,17 +350,9 @@ class SLSDT:
                 error=error,
             )
 
-        return _Node(is_leaf=True, results=frequencies_y, error=error)
+        return Node(is_leaf=True, results=frequencies_y, error=error)
 
     def __prune(self, tree):
-        """pruning the tree
-
-        Args:
-            tree (SLSDT): tree before being pruned
-
-        Returns:
-            SLSDT: tree after pruned
-        """
         if tree.is_leaf:
             return tree.error
 
@@ -499,15 +369,6 @@ class SLSDT:
             return error_left + error_right
 
     def __classify(self, node, X):
-        """aux function for the predict
-
-        Args:
-            node (DecisionNode): current node in prediction
-            X (numpy.ndarray): current data to be predict
-
-        Returns:
-            numpy.ndarray: current classes predicted of the data
-        """
         if node.is_leaf:
             return np.zeros(X.shape[0]) + np.argmax(node.results)
 
