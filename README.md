@@ -73,7 +73,7 @@ print(result == y)
 
 ### Plot iris oblique split
 
-![alt text](https://github.com/jhonatangs/slsdt/blob/main/oblique-split-iris.png "Iris oblique split")
+![alt text](https://github.com/jhonatangs/slsdt/blob/new-features/oblique-split-iris.png "Iris oblique split")
 
 ## How to contribute
 
