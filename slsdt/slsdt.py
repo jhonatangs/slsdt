@@ -51,7 +51,7 @@ class SLSDT:
         max_samples: int = 10000,
         min_samples_split: int = 4,
         min_samples_leaf: int = 7,
-        max_iterations: int = 1000000,
+        max_iterations: int = 1500000,
         l: int = 20,
         increase: float = 0.7,
         jump: float = 0.3,
@@ -193,8 +193,8 @@ class SLSDT:
 
         if movement == Movement.INCREASE:
             column_modified = self.rng.integers(weights.shape[0], size=1)[0]
-            #value_increase = (1 - -1) * self.rng.random() + -1
-            value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
+            value_increase = (1 - -1) * self.rng.random() + -1
+            # value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
             weights[column_modified] += value_increase
             """column_modified = self.rng.integers(weights.shape[0], size=1)[0]
 
@@ -220,8 +220,8 @@ class SLSDT:
 
         elif movement == Movement.JUMP:
             for i in range(weights.shape[0]):
-                #value_increase = (1 - -1) * self.rng.random() + -1
-                value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
+                value_increase = (1 - -1) * self.rng.random() + -1
+                # value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
                 weights[i] += value_increase
             """for _ in range(self.max_iterations_movement):
                 weights_neighbor = np.copy(weights)
