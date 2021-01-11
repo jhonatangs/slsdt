@@ -53,8 +53,8 @@ class SLSDT:
         min_samples_leaf: int = 7,
         max_iterations: int = 1000000,
         l: int = 10,
-        increase: float = 0.7,
-        jump: float = 0.3,
+        increase: float = 1,
+        jump: float = 0.0,
         max_iterations_movement: int = 10,
         seed: int = 42,
     ):
