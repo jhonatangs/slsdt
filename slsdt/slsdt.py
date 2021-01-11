@@ -53,8 +53,8 @@ class SLSDT:
         min_samples_leaf: int = 7,
         max_iterations: int = 1000000,
         l: int = 10,
-        increase: float = 1,
-        jump: float = 0.0,
+        increase: float = 8,
+        jump: float = 0.2,
         max_iterations_movement: int = 10,
         seed: int = 42,
     ):
@@ -220,9 +220,10 @@ class SLSDT:
 
         elif movement == Movement.JUMP:
             for i in range(weights.shape[0]):
-                value_increase = (1 - -1) * self.rng.random() + -1
+                # value_increase = (1 - -1) * self.rng.random() + -1
                 # value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
-                weights[i] += value_increase
+                value = (2 - -2) * self.rng.random() + -2
+                weights[i] *= value
             """for _ in range(self.max_iterations_movement):
                 weights_neighbor = np.copy(weights)
 
