@@ -13,10 +13,19 @@ from slsdt.utils import (
     more_zeros,
 )
 
+# SWAP, *
+# ZERO, *
+# RESET, *
+# MULTIPLE_INCREASE
+
 
 class Movement(Enum):
     INCREASE = 1
-    JUMP = 2
+    MULTIPLE_INCREASE = 2
+    SWAP = 3
+    ZERO = 4
+    JUMP = 5
+    RESET = 6
 
 
 class Node:
@@ -53,9 +62,12 @@ class SLSDT:
         min_samples_leaf: int = 7,
         max_iterations: int = 1000000,
         l: int = 10,
-        increase: float = 8,
-        jump: float = 0.2,
-        max_iterations_movement: int = 10,
+        increase: float = 0.0,
+        multiple_increase: float = 0.95,
+        swap: float = 0.0,
+        zero: float = 0.0,
+        jump: float = 0.0,
+        reset: float = 0.05,
         seed: int = 42,
     ):
 
@@ -67,8 +79,11 @@ class SLSDT:
         self.max_iterations = max_iterations
         self.l = l
         self.increase = increase
+        self.multiple_increase = multiple_increase
+        self.swap = swap
+        self.zero = zero
         self.jump = jump
-        self.max_iterations_movement = max_iterations_movement
+        self.reset = reset
         self.rng = np.random.default_rng(seed)
 
     def fit(self, X: np.ndarray, y: np.ndarray) -> SLSDT:
@@ -127,8 +142,11 @@ class SLSDT:
             "max_iterations": self.max_iterations,
             "l": self.l,
             "increase": self.increase,
+            "multiple_increase": self.multiple_increase,
+            "swap": self.swap,
+            "zero": self.zero,
             "jump": self.jump,
-            "max_iterations_movement": self.max_iterations_movement,
+            "reset": self.reset,
         }
 
     def set_params(self, **parametes):
@@ -160,7 +178,11 @@ class SLSDT:
     def __calc_percentage_movements(self):
         self.percentage_movements = [
             (Movement.INCREASE, self.increase),
+            (Movement.MULTIPLE_INCREASE, self.multiple_increase),
+            (Movement.SWAP, self.swap),
+            (Movement.ZERO, self.zero),
             (Movement.JUMP, self.jump),
+            (Movement.RESET, self.reset),
         ]
 
         self.percentage_movements = sorted(
@@ -181,69 +203,54 @@ class SLSDT:
 
         if x <= self.percentages_transform[0]:
             return self.percentage_movements[0][0]
-        else:
+        elif x <= self.percentages_transform[1]:
             return self.percentage_movements[1][0]
+        elif x <= self.percentages_transform[2]:
+            return self.percentage_movements[2][0]
+        elif x <= self.percentages_transform[3]:
+            return self.percentage_movements[3][0]
+        elif x <= self.percentages_transform[4]:
+            return self.percentage_movements[4][0]
+        else:
+            return self.percentage_movements[5][0]
 
-    def __make_movement(self, weights, movement, X, y, frequencies_y):
+    def __make_movement(self, weights, movement):
         weights = np.copy(weights)
-
-        """cost = calc_impurity(
-            X, y, weights, self.criterion, frequencies_y, self.min_samples_leaf
-        )"""
 
         if movement == Movement.INCREASE:
             column_modified = self.rng.integers(weights.shape[0], size=1)[0]
             value_increase = (1 - -1) * self.rng.random() + -1
-            # value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
             weights[column_modified] += value_increase
-            """column_modified = self.rng.integers(weights.shape[0], size=1)[0]
 
-            for _ in range(self.max_iterations_movement):
-                weights_neighbor = np.copy(weights)
-
+        elif movement == Movement.MULTIPLE_INCREASE:
+            number_columns_modified = self.rng.integers(
+                1, weights.shape[0] + 1, size=1
+            )[0]
+            columns_modified = self.rng.choice(
+                weights.shape[0], size=number_columns_modified, replace=False
+            )
+            for column_modified in columns_modified:
                 value_increase = (1 - -1) * self.rng.random() + -1
+                weights[column_modified] += value_increase
 
-                weights_neighbor[column_modified] += value_increase
+        elif movement == Movement.SWAP:
+            column1, column2 = self.rng.choice(weights.shape[0], size=2, replace=False)
+            weights[column1], weights[column2] = np.copy(weights[column2]), np.copy(
+                weights[column1]
+            )
 
-                if (
-                    calc_impurity(
-                        X,
-                        y,
-                        weights_neighbor,
-                        self.criterion,
-                        frequencies_y,
-                        self.min_samples_leaf,
-                    )
-                    > cost
-                ):
-                    weights = np.copy(weights_neighbor)"""
+        elif movement == Movement.ZERO:
+            column_modified = self.rng.integers(weights.shape[0], size=1)[0]
+            weights[column_modified] = 0
 
         elif movement == Movement.JUMP:
             for i in range(weights.shape[0]):
-                # value_increase = (1 - -1) * self.rng.random() + -1
-                # value_increase = (0.5 - -0.5) * self.rng.random() + -0.5
                 value = (2 - -2) * self.rng.random() + -2
                 weights[i] *= value
-            """for _ in range(self.max_iterations_movement):
-                weights_neighbor = np.copy(weights)
 
-                for i in range(weights.shape[0]):
-                    value_increase = (1 - -1) * self.rng.random() + -1
-
-                    weights_neighbor[i] += value_increase
-
-                if (
-                    calc_impurity(
-                        X,
-                        y,
-                        weights_neighbor,
-                        self.criterion,
-                        frequencies_y,
-                        self.min_samples_leaf,
-                    )
-                    > cost
-                ):
-                    weights = np.copy(weights_neighbor)"""
+        elif movement == Movement.RESET:
+            for i in range(weights.shape[0]):
+                weights[i] = 0
 
         return weights
 
@@ -278,9 +285,7 @@ class SLSDT:
         iteration, v = 0, 0
 
         while iteration < self.max_iterations:
-            weights_neighbor = self.__make_movement(
-                weights, self.__build_movement(), X, y, frequencies_y
-            )
+            weights_neighbor = self.__make_movement(weights, self.__build_movement())
 
             cost_neighbor = calc_impurity(
                 X,
@@ -317,6 +322,7 @@ class SLSDT:
         )
 
     def __make_tree(self, X, y, depth=1):
+        print(depth)
         if X.shape[0] == 0 or y.shape[0] == 0:
             return Node()
 
