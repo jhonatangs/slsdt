@@ -63,11 +63,11 @@ class SLSDT:
         max_iterations: int = 1000000,
         l: int = 10,
         increase: float = 0.0,
-        multiple_increase: float = 0.95,
+        multiple_increase: float = 0.9,
         swap: float = 0.0,
         zero: float = 0.0,
         jump: float = 0.0,
-        reset: float = 0.05,
+        reset: float = 0.1,
         seed: int = 42,
     ):
 
