@@ -3,8 +3,8 @@
 .vscode
 artifacts_article/
 instances_tests/
+slsdt.egg-info/
 smac/
 slsdt/.mypy_cache
 slsdt/__pycache__
 slsdt/test.py
-slsdt.egg-info/

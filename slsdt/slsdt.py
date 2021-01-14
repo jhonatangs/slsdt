@@ -13,11 +13,6 @@ from slsdt.utils import (
     more_zeros,
 )
 
-# SWAP, *
-# ZERO, *
-# RESET, *
-# MULTIPLE_INCREASE
-
 
 class Movement(Enum):
     INCREASE = 1
@@ -63,9 +58,9 @@ class SLSDT:
         max_iterations: int = 1000000,
         l: int = 10,
         increase: float = 0.0,
-        multiple_increase: float = 0.9,
-        swap: float = 0.0,
-        zero: float = 0.0,
+        multiple_increase: float = 0.75,
+        swap: float = 0.1,
+        zero: float = 0.1,
         jump: float = 0.0,
         reset: float = 0.1,
         seed: int = 42,
@@ -250,8 +245,6 @@ class SLSDT:
 
         elif movement == Movement.RESET:
             weights = np.copy(self.initial_weights)
-            # for i in range(weights.shape[0]):
-        #     weights[i] = 0
 
         return weights
 
@@ -324,7 +317,6 @@ class SLSDT:
         )
 
     def __make_tree(self, X, y, depth=1):
-        #print(depth)
         if X.shape[0] == 0 or y.shape[0] == 0:
             return Node()
 
