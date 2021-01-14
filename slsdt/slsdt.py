@@ -19,8 +19,7 @@ class Movement(Enum):
     MULTIPLE_INCREASE = 2
     SWAP = 3
     ZERO = 4
-    JUMP = 5
-    RESET = 6
+    RESET = 5
 
 
 class Node:
@@ -61,7 +60,6 @@ class SLSDT:
         multiple_increase: float = 0.75,
         swap: float = 0.1,
         zero: float = 0.1,
-        jump: float = 0.0,
         reset: float = 0.1,
         seed: int = 42,
     ):
@@ -77,7 +75,6 @@ class SLSDT:
         self.multiple_increase = multiple_increase
         self.swap = swap
         self.zero = zero
-        self.jump = jump
         self.reset = reset
         self.rng = np.random.default_rng(seed)
 
@@ -140,7 +137,6 @@ class SLSDT:
             "multiple_increase": self.multiple_increase,
             "swap": self.swap,
             "zero": self.zero,
-            "jump": self.jump,
             "reset": self.reset,
         }
 
@@ -176,7 +172,6 @@ class SLSDT:
             (Movement.MULTIPLE_INCREASE, self.multiple_increase),
             (Movement.SWAP, self.swap),
             (Movement.ZERO, self.zero),
-            (Movement.JUMP, self.jump),
             (Movement.RESET, self.reset),
         ]
 
@@ -204,10 +199,8 @@ class SLSDT:
             return self.percentage_movements[2][0]
         elif x <= self.percentages_transform[3]:
             return self.percentage_movements[3][0]
-        elif x <= self.percentages_transform[4]:
-            return self.percentage_movements[4][0]
         else:
-            return self.percentage_movements[5][0]
+            return self.percentage_movements[4][0]
 
     def __make_movement(self, weights, movement):
         weights = np.copy(weights)
@@ -237,11 +230,6 @@ class SLSDT:
         elif movement == Movement.ZERO:
             column_modified = self.rng.integers(weights.shape[0], size=1)[0]
             weights[column_modified] = 0
-
-        elif movement == Movement.JUMP:
-            for i in range(weights.shape[0]):
-                value = (2 - -2) * self.rng.random() + -2
-                weights[i] *= value
 
         elif movement == Movement.RESET:
             weights = np.copy(self.initial_weights)
