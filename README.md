@@ -17,7 +17,7 @@ This project also provides a utility to read csv files and convert to the format
 1. Install
 
 ```bash
-pip install slsdt
+pip3 install slsdt
 ```
 
 2. read_csv
@@ -70,7 +70,9 @@ print(result == y)
 
 ### Plot iris oblique split
 
-![alt text](https://github.com/jhonatangs/slsdt/blob/new-features/oblique-split-iris.png "Iris oblique split")
+![alt text](https://github.com/jhonatangs/slsdt/blob/main/oblique-split-iris.png "Iris oblique split")
+
+Plot with Matplotlib using the results obtained above.
 
 ## How to contribute
 
