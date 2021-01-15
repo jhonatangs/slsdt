@@ -85,4 +85,4 @@ Plot with Matplotlib using the results obtained above.
 
 ## License
 
-This project is licensed under the EPL 2.0 License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the EPL 2.0 License - see the [LICENSE](https://github.com/jhonatangs/slsdt/blob/main/LICENSE) file for details.
