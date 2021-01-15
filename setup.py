@@ -11,7 +11,7 @@ URL = "https://github.com/jhonatangs/slsdt"
 EMAIL = "jhonatan.souza@aluno.ufop.edu.br"
 AUTHORS = "Souza, J.G. and Santos, H.G."
 REQUIRES_PYTHON = ">3.5.0"
-VERSION = "1.0.0"
+VERSION = "0.0.1"
 
 REQUIRED = ["numpy", "pandas", "numba", "scikit-learn"]
 
