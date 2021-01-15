@@ -17,10 +17,7 @@ This project also provides a utility to read csv files and convert to the format
 1. Install
 
 ```bash
-git clone https://github.com/jhonatangs/slsdt.git
-cd slsdt
-git checkout main
-pip install -e .
+pip install slsdt
 ```
 
 2. read_csv
