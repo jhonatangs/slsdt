@@ -6,9 +6,9 @@ This repository is for my first scientific initiation project.
 
 ## About
 
-Oblique Decision Tree is a algorithm for induction a machine learning method called decision tree using oblique approach.
+Decision tree is a predictive modelling aproach used in machine learning, data mining and statistics. In the decision tree each internal node represents a test on a feature, each terminal or leaf node represents a class label. Oblique Decision Tree is a variation of traditional decision trees, which allows multivariate tests in its internal nodes in the form of a combination of the features.
 
-SLSDT is a method for induction oblique decision trees using stochastic local search method called Late Acceptance Hill-Climbing (LAHC).
+Our research, SLSDT, is a method for induction oblique decision trees using a stochastic local search method called Late Acceptance Hill-Climbing (LAHC) to try to find the best combination of featurs in each internal node.
 
 This project also provides a utility to read csv files and convert to the format accepted by the SLSDT method.
 
