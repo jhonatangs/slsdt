@@ -134,5 +134,5 @@ def calc_impurity(X, y, weights, criterion, frequencies_y, min_samples_leaf):
 
 
 @njit
-def more_zeros(arr1, arr2):
-    return np.count_nonzero(arr1 == 0) > np.count_nonzero(arr2 == 0)
+def calc_penalty(weights):
+    return np.count_nonzero(weights) * 0.0001

@@ -7,10 +7,10 @@ import numpy as np
 from slsdt.utils import (
     apply_weights,
     calc_impurity,
+    calc_penalty,
     entropy,
     gini,
     make_initial_weights,
-    more_zeros,
 )
 
 
@@ -252,13 +252,16 @@ class SLSDT:
 
         weights_final = np.copy(weights)
 
-        cost = calc_impurity(
-            X,
-            y,
-            weights_final,
-            self.criterion,
-            frequencies_y,
-            self.min_samples_leaf,
+        cost = (
+            calc_impurity(
+                X,
+                y,
+                weights_final,
+                self.criterion,
+                frequencies_y,
+                self.min_samples_leaf,
+            )
+            - calc_penalty(weights_final)
         )
 
         cost_final = np.copy(cost)
@@ -270,13 +273,16 @@ class SLSDT:
         while iteration < self.max_iterations:
             weights_neighbor = self.__make_movement(weights, self.__build_movement())
 
-            cost_neighbor = calc_impurity(
-                X,
-                y,
-                weights_neighbor,
-                self.criterion,
-                frequencies_y,
-                self.min_samples_leaf,
+            cost_neighbor = (
+                calc_impurity(
+                    X,
+                    y,
+                    weights_neighbor,
+                    self.criterion,
+                    frequencies_y,
+                    self.min_samples_leaf,
+                )
+                - calc_penalty(weights_neighbor)
             )
 
             if cost_neighbor >= cost or cost_neighbor >= costs[v]:
@@ -286,10 +292,6 @@ class SLSDT:
                 if cost > cost_final:
                     weights_final = np.copy(weights)
                     cost_final = np.copy(cost)
-                elif cost == cost_final:
-                    if more_zeros(weights, weights_final):
-                        weights_final = np.copy(weights)
-                        cost_final = np.copy(cost)
 
             costs[v] = cost
             v = (v + 1) % self.l
