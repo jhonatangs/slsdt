@@ -25,7 +25,7 @@ pip3 install slsdt
 ```python
 from slsdt.reader_csv import read_csv
 
-X, y = read_csv("some_file.csv", "class_column_name")
+X, y = read_csv("iris.csv", "class")
 ```
 
 3. slsdt
@@ -33,13 +33,17 @@ X, y = read_csv("some_file.csv", "class_column_name")
 ```python
 from slsdt.slsdt import SLSDT
 
+
+# split train and test data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+
 clf = SLSDT()
-clf.fit(X, y)
 
-result = clf.predict(X)
+clf.fit(X_train, y_train)
 
-print(result)
-print(result == y)
+results = clf.predict(X_test)
+
+print(f"Accuracy: {(results == y_test) / len(y_test)}")
 ```
 
 ## Iris example oblique split
@@ -49,6 +53,7 @@ from sklearn import datasets
 from slsdt.slsdt import SLSDT
 
 iris = datasets.load_iris()
+
 X = iris.data[:, :2] # we only take the sepal width and sepal length features.
 y = iris.target
 
@@ -59,7 +64,9 @@ X = X[mark]
 y = y[mark]
 
 clf = SLSDT()
+
 clf.fit(X, y)
+
 clf.print_tree()
 
 result = clf.predict(X)
