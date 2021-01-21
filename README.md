@@ -43,7 +43,7 @@ clf.fit(X_train, y_train)
 
 results = clf.predict(X_test)
 
-print(f"Accuracy: {(results == y_test) / len(y_test)}")
+print(f"Accuracy: {sum(results == y_test) / len(y_test)}")
 ```
 
 ## Iris example oblique split
