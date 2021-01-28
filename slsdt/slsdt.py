@@ -4,6 +4,7 @@ from enum import Enum
 
 import numpy as np
 
+
 from slsdt.utils import (
     apply_weights,
     calc_impurity,
@@ -49,12 +50,12 @@ class SLSDT:
 
     def __init__(
         self,
-        criterion: str = "gini",
+        criterion: str = "entropy",
         max_depth: int = 8,
         max_samples: int = 10000,
         min_samples_split: int = 4,
         min_samples_leaf: int = 7,
-        max_iterations: int = 900000,
+        max_iterations: int = 1000000,
         l: int = 10,
         increase: float = 0.0,
         multiple_increase: float = 0.75,
@@ -264,6 +265,10 @@ class SLSDT:
             - calc_penalty(weights_final)
         )
 
+        print("Cost: ", cost)
+
+        print("Penalty: ", calc_penalty(weights_final))
+
         cost_final = np.copy(cost)
 
         costs = [cost for _ in range(self.l)]
@@ -307,6 +312,7 @@ class SLSDT:
         )
 
     def __make_tree(self, X, y, depth=1):
+        print("Depth: ", depth)
         if X.shape[0] == 0 or y.shape[0] == 0:
             return Node()
 
@@ -320,7 +326,9 @@ class SLSDT:
         n_classes = classes.shape[0]
 
         if not self.__stopping_criterion(n_classes, depth, X.shape[0]):
-            weights, _ = self.__lahc(X, y, frequencies_y)
+            weights, cost = self.__lahc(X, y, frequencies_y)
+            print("Cost: ", cost)
+            print("Weights: ", weights)
 
             split = np.array([apply_weights(record, weights) > 0 for record in X])
 
