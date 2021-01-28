@@ -104,7 +104,7 @@ def apply_weights(record, weights):
 
 
 @njit
-def calc_impurity(X, y, weights, criterion, frequencies_y, min_samples_leaf):
+def calc_impurity(X, y, weights, criterion, frequencies_y):
     count_left = np.zeros_like(frequencies_y)
     count_right = np.zeros_like(frequencies_y)
 
@@ -113,14 +113,6 @@ def calc_impurity(X, y, weights, criterion, frequencies_y, min_samples_leaf):
             count_left[y[i]] += 1
         else:
             count_right[y[i]] += 1
-
-    if (
-        np.sum(count_left) <= min_samples_leaf
-        or np.sum(count_right) <= min_samples_leaf
-        or np.sum(count_left) <= 0
-        or np.sum(count_right) <= 0
-    ):
-        return -math.inf
 
     total_frequencies_y = np.sum(frequencies_y)
     p1 = np.sum(count_left) / total_frequencies_y

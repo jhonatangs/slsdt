@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
+from math import ceil
 
 import numpy as np
 
@@ -51,12 +52,13 @@ class SLSDT:
     def __init__(
         self,
         criterion: str = "entropy",
-        max_depth: int = 8,
-        max_samples: int = 10000,
-        min_samples_split: int = 4,
-        min_samples_leaf: int = 7,
+        max_depth: int = 7,
+        max_samples: int or float = 10000,
+        min_samples_split: int or float = 2,
+        min_samples_leaf: int or float = 1,
+        min_impurity_split: float = 0.1,
         max_iterations: int = 1000000,
-        l: int = 10,
+        l: int = 15,
         increase: float = 0.0,
         multiple_increase: float = 0.75,
         swap: float = 0.1,
@@ -70,6 +72,7 @@ class SLSDT:
         self.max_samples = max_samples
         self.min_samples_split = min_samples_split
         self.min_samples_leaf = min_samples_leaf
+        self.min_impurity_split = min_impurity_split
         self.max_iterations = max_iterations
         self.l = l
         self.increase = increase
@@ -95,8 +98,28 @@ class SLSDT:
 
         self.X = X
         self.y = y
+
+        self.min_samples_split = (
+            self.min_samples_split
+            if isinstance(self.min_samples_split, int)
+            else ceil(self.min_samples_split * X.shape[0])
+        )
+
+        self.min_samples_leaf = (
+            self.min_samples_leaf
+            if isinstance(self.min_samples_leaf, int)
+            else ceil(self.min_samples_leaf * X.shape[0])
+        )
+
+        self.max_samples = (
+            self.max_samples
+            if isinstance(self.max_samples, int)
+            else ceil(self.max_samples * X.shape[0])
+        )
+
         self.unique_classes = np.unique(y)
         self.n_classes = self.unique_classes.shape[0]
+        self.n_samples = X.shape[0]
         self.n_features = X.shape[1]
         self.__calc_percentage_movements()
         self.criterion = entropy if self.criterion == "entropy" else gini
@@ -132,6 +155,7 @@ class SLSDT:
             "max_samples": self.max_samples,
             "min_samples_split": self.min_samples_split,
             "min_samples_leaf": self.min_samples_leaf,
+            "min_impurity_split": self.min_impurity_split,
             "max_iterations": self.max_iterations,
             "l": self.l,
             "increase": self.increase,
@@ -260,14 +284,9 @@ class SLSDT:
                 weights_final,
                 self.criterion,
                 frequencies_y,
-                self.min_samples_leaf,
             )
             - calc_penalty(weights_final)
         )
-
-        print("Cost: ", cost)
-
-        print("Penalty: ", calc_penalty(weights_final))
 
         cost_final = np.copy(cost)
 
@@ -285,7 +304,6 @@ class SLSDT:
                     weights_neighbor,
                     self.criterion,
                     frequencies_y,
-                    self.min_samples_leaf,
                 )
                 - calc_penalty(weights_neighbor)
             )
@@ -312,7 +330,7 @@ class SLSDT:
         )
 
     def __make_tree(self, X, y, depth=1):
-        print("Depth: ", depth)
+        # print("Depth: ", depth)
         if X.shape[0] == 0 or y.shape[0] == 0:
             return Node()
 
@@ -327,16 +345,18 @@ class SLSDT:
 
         if not self.__stopping_criterion(n_classes, depth, X.shape[0]):
             weights, cost = self.__lahc(X, y, frequencies_y)
-            print("Cost: ", cost)
-            print("Weights: ", weights)
+            # print("Cost: ", cost)
+            # print("Weights: ", weights)
 
             split = np.array([apply_weights(record, weights) > 0 for record in X])
+
+            # print(f"True: {np.sum(split)}, False: {np.sum(~split)}")
+            # print(f"True: {y[split]}, False: {y[~split]}")
 
             if (
                 np.sum(split) <= self.min_samples_leaf
                 or np.sum(~split) <= self.min_samples_leaf
-                or np.sum(split) <= 0
-                or np.sum(~split) <= 0
+                or cost < self.min_impurity_split
             ):
                 return Node(is_leaf=True, results=frequencies_y, error=error)
 
