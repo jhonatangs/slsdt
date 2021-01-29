@@ -41,7 +41,7 @@ jobs:
             - name: Install dependencies
               run: pip install -r requirements.txt
             - name: Install slsdt
-              run: pip install slsdt
+              run: pip install -e .
             - name: Create results
               run: mkdir -p results
             - name: Performance test

@@ -4,6 +4,7 @@ from enum import Enum
 from math import ceil
 
 import numpy as np
+from graphviz import Digraph
 
 
 from slsdt.utils import (
@@ -277,14 +278,16 @@ class SLSDT:
 
         weights_final = np.copy(weights)
 
-        cost = calc_impurity(
-            X,
-            y,
-            weights_final,
-            self.criterion,
-            frequencies_y,
+        cost = (
+            calc_impurity(
+                X,
+                y,
+                weights_final,
+                self.criterion,
+                frequencies_y,
+            )
+            - calc_penalty(weights_final)
         )
-        # - calc_penalty(weights_final)
 
         cost_final = np.copy(cost)
 
@@ -295,14 +298,16 @@ class SLSDT:
         while iteration < self.max_iterations:
             weights_neighbor = self.__make_movement(weights, self.__build_movement())
 
-            cost_neighbor = calc_impurity(
-                X,
-                y,
-                weights_neighbor,
-                self.criterion,
-                frequencies_y,
+            cost_neighbor = (
+                calc_impurity(
+                    X,
+                    y,
+                    weights_neighbor,
+                    self.criterion,
+                    frequencies_y,
+                )
+                - calc_penalty(weights_neighbor)
             )
-            # - calc_penalty(weights_neighbor)
 
             if cost_neighbor >= cost or cost_neighbor >= costs[v]:
                 weights = np.copy(weights_neighbor)
@@ -412,3 +417,23 @@ class SLSDT:
             self.__aux_print_tree(node.children_left, depth + 1)
         if node.children_right:
             self.__aux_print_tree(node.children_right, depth + 1)
+
+    def test_print(self):
+        g = Digraph("G", filename="artifacts_article/test.gv")
+        self.__aux_print_tree_(self.tree, g)
+        g.view()
+
+    def __aux_print_tree_(self, node, g):
+        if not node.is_leaf:
+            if node.children_left:
+                if node.children_left.is_leaf:
+                    g.edge(str(node.weights), str(node.children_left.results))
+                else:
+                    g.edge(str(node.weights), str(node.children_left.weights))
+                self.__aux_print_tree_(node.children_left, g)
+            if node.children_right:
+                if node.children_right.is_leaf:
+                    g.edge(str(node.weights), str(node.children_right.results))
+                else:
+                    g.edge(str(node.weights), str(node.children_right.weights))
+                self.__aux_print_tree_(node.children_right, g)
