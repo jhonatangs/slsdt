@@ -291,14 +291,16 @@ class SLSDT:
 
         weights_final = np.copy(weights)
 
-        cost = calc_impurity(
-            X,
-            y,
-            weights_final,
-            self.criterion,
-            frequencies_y,
+        cost = (
+            calc_impurity(
+                X,
+                y,
+                weights_final,
+                self.criterion,
+                frequencies_y,
+            )
+            - calc_penalty(weights_final)
         )
-        # - calc_penalty(weights_final)
 
         cost_final = np.copy(cost)
 
@@ -309,14 +311,16 @@ class SLSDT:
         while iteration < self.max_iterations:
             weights_neighbor = self.__make_movement(weights, self.__build_movement())
 
-            cost_neighbor = calc_impurity(
-                X,
-                y,
-                weights_neighbor,
-                self.criterion,
-                frequencies_y,
+            cost_neighbor = (
+                calc_impurity(
+                    X,
+                    y,
+                    weights_neighbor,
+                    self.criterion,
+                    frequencies_y,
+                )
+                - calc_penalty(weights_neighbor)
             )
-            # - calc_penalty(weights_neighbor)
 
             if cost_neighbor >= cost or cost_neighbor >= costs[v]:
                 weights = np.copy(weights_neighbor)
