@@ -232,29 +232,42 @@ class SLSDT:
         weights = np.copy(weights)
 
         if movement == Movement.INCREASE:
-            column_modified = self.rng.integers(weights.shape[0], size=1)[0]
+            # column_modified = self.rng.integers(weights.shape[0], size=1)[0]
+            column_modified = self.rng.integers(weights.shape[0] - 1, size=1)[0]
             value_increase = (1 - -1) * self.rng.random() + -1
             weights[column_modified] += value_increase
 
         elif movement == Movement.MULTIPLE_INCREASE:
-            number_columns_modified = self.rng.integers(
+            """number_columns_modified = self.rng.integers(
                 1, weights.shape[0] + 1, size=1
-            )[0]
-            columns_modified = self.rng.choice(
+            )[0]"""
+            number_columns_modified = self.rng.integers(1, weights.shape[0], size=1)[0]
+
+            """columns_modified = self.rng.choice(
                 weights.shape[0], size=number_columns_modified, replace=False
+            )"""
+            columns_modified = self.rng.choice(
+                weights.shape[0] - 1, size=number_columns_modified, replace=False
             )
+
             for column_modified in columns_modified:
                 value_increase = (1 - -1) * self.rng.random() + -1
                 weights[column_modified] += value_increase
 
         elif movement == Movement.SWAP:
-            column1, column2 = self.rng.choice(weights.shape[0], size=2, replace=False)
+            # column1, column2 = self.rng.choice(weights.shape[0], size=2, replace=False)
+            column1, column2 = self.rng.choice(
+                weights.shape[0] - 1, size=2, replace=False
+            )
+
             weights[column1], weights[column2] = np.copy(weights[column2]), np.copy(
                 weights[column1]
             )
 
         elif movement == Movement.ZERO:
-            column_modified = self.rng.integers(weights.shape[0], size=1)[0]
+            # column_modified = self.rng.integers(weights.shape[0], size=1)[0]
+            column_modified = self.rng.integers(weights.shape[0] - 1, size=1)[0]
+
             weights[column_modified] = 0
 
         elif movement == Movement.RESET:
