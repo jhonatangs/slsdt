@@ -5,19 +5,22 @@ import numpy as np
 from sklearn.preprocessing import LabelEncoder
 
 
-def read_csv(file: str, class_index: str) -> Tuple[np.ndarray, np.ndarray]:
+def read_csv(file: str, target: str) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Reads a database in csv file format performing pre-processing. Returning
-    datas and classes separately.
+    Reads a database in csv file format and does the basic pre-processing
+    required for the SLSDT.
 
     Args:
-        file (str): File path
-        class_index (str): Name index of class in csv file
+        file (str): csv file path
+        class_index (str): name of the column of the classification target
+        in csv file
 
     Returns:
-        (numpy.ndarray, numpy.ndarray): Returns a tuple containg a
-        two-dimensional array representing datas and a one-dimensional array
-        representing classes
+        Tuple object, containing:
+
+        data (ndarray): The data array.
+        Target (ndarray): The classification target.
+
     """
     df = pd.read_csv(file)
 
@@ -26,9 +29,9 @@ def read_csv(file: str, class_index: str) -> Tuple[np.ndarray, np.ndarray]:
             encoder = LabelEncoder()
             df[column] = encoder.fit_transform(df[column])
 
-    data = np.ascontiguousarray(df.drop([class_index], axis=1, inplace=False).values)
+    data = np.ascontiguousarray(df.drop([target], axis=1, inplace=False).values)
 
     encoder = LabelEncoder()
-    classes = np.ascontiguousarray(encoder.fit_transform(df[class_index]))
+    classes = np.ascontiguousarray(encoder.fit_transform(df[target]))
 
     return np.array(data, np.float64), np.array(classes, np.int64)

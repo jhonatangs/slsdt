@@ -232,8 +232,8 @@ class SLSDT:
         weights = np.copy(weights)
 
         if movement == Movement.INCREASE:
-            column_modified = self.rng.integers(weights.shape[0], size=1)[0]
-            # column_modified = self.rng.integers(weights.shape[0] - 1, size=1)[0]
+            # column_modified = self.rng.integers(weights.shape[0], size=1)[0]
+            column_modified = self.rng.integers(weights.shape[0] - 1, size=1)[0]
             value_increase = (1 - -1) * self.rng.random() + -1
             weights[column_modified] += value_increase
 
@@ -344,7 +344,7 @@ class SLSDT:
         )
 
     def __make_tree(self, X, y, depth=1):
-        # print("Depth: ", depth)
+        print("Depth: ", depth)
         if X.shape[0] == 0 or y.shape[0] == 0:
             return Node()
 
@@ -360,12 +360,12 @@ class SLSDT:
         if not self.__stopping_criterion(n_classes, depth, X.shape[0]):
             weights, cost = self.__lahc(X, y, frequencies_y)
             # print("Cost: ", cost)
-            # print("Weights: ", weights)
+            print("Weights: ", weights)
 
             split = np.array([apply_weights(record, weights) > 0 for record in X])
 
-            # print(f"True: {np.sum(split)}, False: {np.sum(~split)}")
-            # print(f"True: {y[split]}, False: {y[~split]}")
+            print(f"True: {np.sum(split)}, False: {np.sum(~split)}")
+            print(f"True: {y[split]}, False: {y[~split]}")
 
             if (
                 np.sum(split) <= self.min_samples_leaf
