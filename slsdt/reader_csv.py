@@ -13,7 +13,7 @@ def read_csv(file: str, target: str) -> Tuple[np.ndarray, np.ndarray]:
     Args:
         file (str): csv file path
         class_index (str): name of the column of the classification target
-        in csv file
+            in csv file
 
     Returns:
         Tuple object, containing:

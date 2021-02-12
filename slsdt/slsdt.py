@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from enum import Enum
 from math import ceil
 
 import numpy as np
@@ -15,51 +14,27 @@ from slsdt.utils import (
     gini,
     make_initial_weights,
 )
-
-
-class Movement(Enum):
-    INCREASE = 1
-    MULTIPLE_INCREASE = 2
-    SWAP = 3
-    ZERO = 4
-    RESET = 5
-
-
-class Node:
-    def __init__(
-        self,
-        weights=np.empty(0),
-        is_leaf=None,
-        results=np.empty(0),
-        children_left=None,
-        children_right=None,
-        error=-1,
-    ):
-
-        self.weights = weights
-        self.is_leaf = is_leaf
-        self.results = results
-        self.children_left = children_left
-        self.children_right = children_right
-        self.error = error
+from slsdt.Neighborhood import Neighborhood
+from slsdt.Node import Node
 
 
 class SLSDT:
     """
-    A oblique decision tree using LAHC heuristic for find best split in
-    each node of the tree
+    Stochastic Local Search Decision Tree is a method for induction Oblique
+    Decision Tree using Late Acceptance Hill-Climbing (LAHC) heuristic for
+    to try to find best split in each internal node of the tree
     """
 
     def __init__(
         self,
         criterion: str = "entropy",
-        max_depth: int = 7,
+        max_depth: int = 8,
         max_samples: int or float = 10000,
         min_samples_split: int or float = 2,
         min_samples_leaf: int or float = 1,
         min_impurity_split: float = 0.1,
-        max_iterations: int = 1000000,
-        l: int = 15,
+        max_iterations: int = 500000,
+        l: int = 20,
         increase: float = 0.0,
         multiple_increase: float = 0.75,
         swap: float = 0.1,
@@ -67,6 +42,53 @@ class SLSDT:
         reset: float = 0.1,
         seed: int = 42,
     ):
+
+        """SLSDT constructor
+
+        Creates a Stochastic Local Decision Tree (SLSDT). The default
+        parameters is provides for SMAC.
+
+        Args:
+            criterion (str): The function to measure the quality of a split.
+                Supported criteria are "gini" for the Gini impurity and "entropy"
+                for the Information Gain"
+            max_depth (int): The maximum depth of the tree
+            max_samples (int or float): The number of samples to consider when
+                looking for the best split:
+                If int, the consider max_samples at each split.
+                If float, then consider max_samples like
+                    int(max_samples * n_samples) at each split
+            min_samples_split (int or float): The minimum number of samples
+                required to split an internal node:
+                If int, then consider min_samples_split as the minimum number
+                If float, then consider ceil(min_samples_split * n_samples)
+                    as the minimum number
+            min_samples_leaf (int or float): The minimum number o samples
+                required to be a leaf:
+                If int, then consider min_samples_leaf as the minimum number
+                If float, then consider ceil(min_samples_leaf * n_samples)
+                    as the minimum number
+            min_impurity_split (float): The minimum impurity required to split
+                a node.
+            max_iterations (int): The maximum number of the iterations of LAHC
+            l (int): The size of the LAHC list
+            increase (float): The percentage of the neighborhood called
+                "increase" in the LAHC heuristic. Adds a random value from
+                the range [-1, 1) in a random position of the solution
+            multiple_increase (float): The percentage of the neighborhood
+                called "multiple_increase" in the LAHC heuristic. Adds n
+                random values  from the range [-1, 1) at n random positions
+                of the solution. Where n is in the range [1, n_features+1]
+            swap (float): The percentage of the neighborhood called "swap"
+                in the LAHC heuristic. Swaps the value of two random positions.
+            zero (float): The percentage of the neighborhood called "zero" in
+                the LAHC heuristic. Resets a random position
+            reset (float): The percentage of the neighborhood called "reset" in
+                the LAHC heuristic. Back the solution for better solution
+                axis-parallel
+            seed (int): A seed for random functions
+
+        """
 
         self.criterion = criterion
         self.max_depth = max_depth
@@ -85,14 +107,14 @@ class SLSDT:
 
     def fit(self, X: np.ndarray, y: np.ndarray) -> SLSDT:
         """
-        build a oblique decision tree classifier
+        Build a oblique decision tree classifier from the training set (X, y)
 
         Arguments:
-            X {numpy.ndarray} -- records for training
-            y {numpy.ndarray} -- class labels for training
+            X {ndarray} -- The training input samples.
+            y {ndarray} -- The target values (class labels).
 
         Returns:
-            SLSDT: return the classifier
+            self (SLSDT): Fitted estimator.
         """
 
         X, y = self.__check_X_y(X, y)
@@ -131,24 +153,27 @@ class SLSDT:
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         """
-        predict unknown class labels
+        Predict class value for X
+        Predicted class for each sample in X is
 
         Args:
-            X (numpy.ndarray): data to be predict
+            X (ndarray): The imput samples to be predict
 
         Returns:
-            numpy.ndarray: class labels predicted
+            y_pred (ndarray): The predicted classes
         """
         return self.__classify(self.tree, X)
 
     def get_params(self, deep=True):
         """
-        get params of the class
+        Get parameters for this estimator
 
         Args:
-            deep (bool, optional): Defaults to True.
+            deep (bool, optional): Defaults to True. If True, will return the
+                parameters for this estimator and contained subobjects that
+                are estimators.
         Returns:
-            Dict: params of the class
+            params (dict): Parameter names mapped to their values.
         """
         return {
             "criterion": self.criterion,
@@ -168,20 +193,30 @@ class SLSDT:
 
     def set_params(self, **parametes):
         """
-        Set params of the class
+        Set params of this estimator
+
+        Args:
+            **parameters (dict): Estimator parameters
 
         Returns:
-            SLSDT: return the classifier
+            self (SLSDT): Estimator instance
         """
         for parameter, value in parametes.items():
             setattr(self, parameter, value)
 
         return self
 
-    def print_tree(self):
-        """prints the decision tree built"""
+    def text_tree(self):
+        """Prints the tree in text format"""
 
-        self.__aux_print_tree(self.tree, 1)
+        self.__aux_text_tree(self.tree, 1)
+
+    def print_tree(self):
+        """Prints the tree in image format"""
+
+        g = Digraph("G", filename="artifacts_article/test.gv")
+        self.__aux_print_tree(self.tree, g)
+        g.view()
 
     @staticmethod
     def __check_X_y(X, y):
@@ -194,11 +229,11 @@ class SLSDT:
 
     def __calc_percentage_movements(self):
         self.percentage_movements = [
-            (Movement.INCREASE, self.increase),
-            (Movement.MULTIPLE_INCREASE, self.multiple_increase),
-            (Movement.SWAP, self.swap),
-            (Movement.ZERO, self.zero),
-            (Movement.RESET, self.reset),
+            (Neighborhood.INCREASE, self.increase),
+            (Neighborhood.MULTIPLE_INCREASE, self.multiple_increase),
+            (Neighborhood.SWAP, self.swap),
+            (Neighborhood.ZERO, self.zero),
+            (Neighborhood.RESET, self.reset),
         ]
 
         self.percentage_movements = sorted(
@@ -231,21 +266,14 @@ class SLSDT:
     def __make_movement(self, weights, movement):
         weights = np.copy(weights)
 
-        if movement == Movement.INCREASE:
-            # column_modified = self.rng.integers(weights.shape[0], size=1)[0]
+        if movement == Neighborhood.INCREASE:
             column_modified = self.rng.integers(weights.shape[0] - 1, size=1)[0]
             value_increase = (1 - -1) * self.rng.random() + -1
             weights[column_modified] += value_increase
 
-        elif movement == Movement.MULTIPLE_INCREASE:
-            """number_columns_modified = self.rng.integers(
-                1, weights.shape[0] + 1, size=1
-            )[0]"""
+        elif movement == Neighborhood.MULTIPLE_INCREASE:
             number_columns_modified = self.rng.integers(1, weights.shape[0], size=1)[0]
 
-            """columns_modified = self.rng.choice(
-                weights.shape[0], size=number_columns_modified, replace=False
-            )"""
             columns_modified = self.rng.choice(
                 weights.shape[0] - 1, size=number_columns_modified, replace=False
             )
@@ -254,8 +282,7 @@ class SLSDT:
                 value_increase = (1 - -1) * self.rng.random() + -1
                 weights[column_modified] += value_increase
 
-        elif movement == Movement.SWAP:
-            # column1, column2 = self.rng.choice(weights.shape[0], size=2, replace=False)
+        elif movement == Neighborhood.SWAP:
             column1, column2 = self.rng.choice(
                 weights.shape[0] - 1, size=2, replace=False
             )
@@ -264,13 +291,12 @@ class SLSDT:
                 weights[column1]
             )
 
-        elif movement == Movement.ZERO:
-            # column_modified = self.rng.integers(weights.shape[0], size=1)[0]
+        elif movement == Neighborhood.ZERO:
             column_modified = self.rng.integers(weights.shape[0] - 1, size=1)[0]
 
             weights[column_modified] = 0
 
-        elif movement == Movement.RESET:
+        elif movement == Neighborhood.RESET:
             weights = np.copy(self.initial_weights)
 
         return weights
@@ -344,7 +370,6 @@ class SLSDT:
         )
 
     def __make_tree(self, X, y, depth=1):
-        print("Depth: ", depth)
         if X.shape[0] == 0 or y.shape[0] == 0:
             return Node()
 
@@ -359,13 +384,8 @@ class SLSDT:
 
         if not self.__stopping_criterion(n_classes, depth, X.shape[0]):
             weights, cost = self.__lahc(X, y, frequencies_y)
-            # print("Cost: ", cost)
-            print("Weights: ", weights)
 
             split = np.array([apply_weights(record, weights) > 0 for record in X])
-
-            print(f"True: {np.sum(split)}, False: {np.sum(~split)}")
-            print(f"True: {y[split]}, False: {y[~split]}")
 
             if (
                 np.sum(split) <= self.min_samples_leaf
@@ -419,7 +439,7 @@ class SLSDT:
 
         return y_pred
 
-    def __aux_print_tree(self, node, depth):
+    def __aux_text_tree(self, node, depth):
         print(depth * " ", end="")
         if node.is_leaf:
             print(f"Predict: {node.results}")
@@ -427,26 +447,21 @@ class SLSDT:
             print(f"Weights: {node.weights}")
 
         if node.children_left:
-            self.__aux_print_tree(node.children_left, depth + 1)
+            self.__aux_text_tree(node.children_left, depth + 1)
         if node.children_right:
-            self.__aux_print_tree(node.children_right, depth + 1)
+            self.__aux_text_tree(node.children_right, depth + 1)
 
-    def test_print(self):
-        g = Digraph("G", filename="artifacts_article/test.gv")
-        self.__aux_print_tree_(self.tree, g)
-        g.view()
-
-    def __aux_print_tree_(self, node, g):
+    def __aux_print_tree(self, node, g):
         if not node.is_leaf:
             if node.children_left:
                 if node.children_left.is_leaf:
                     g.edge(str(node.weights), str(node.children_left.results))
                 else:
                     g.edge(str(node.weights), str(node.children_left.weights))
-                self.__aux_print_tree_(node.children_left, g)
+                self.__aux_print_tree(node.children_left, g)
             if node.children_right:
                 if node.children_right.is_leaf:
                     g.edge(str(node.weights), str(node.children_right.results))
                 else:
                     g.edge(str(node.weights), str(node.children_right.weights))
-                self.__aux_print_tree_(node.children_right, g)
+                self.__aux_print_tree(node.children_right, g)
