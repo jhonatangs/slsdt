@@ -13,3 +13,4 @@ dist/
 sdist/
 slsdt/version.py
 slsdt/__version__.py
+docs/_build

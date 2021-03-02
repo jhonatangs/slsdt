@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from math import ceil
+from typing import Dict
 
 import numpy as np
 from graphviz import Digraph
@@ -41,7 +42,7 @@ class SLSDT:
         zero: float = 0.1,
         reset: float = 0.1,
         seed: int = 42,
-    ):
+    ) -> None:
 
         """SLSDT constructor
 
@@ -54,20 +55,20 @@ class SLSDT:
                 for the Information Gain"
             max_depth (int): The maximum depth of the tree
             max_samples (int or float): The number of samples to consider when
-                looking for the best split:
-                If int, the consider max_samples at each split.
+                looking for the best split:\n
+                If int, the consider max_samples at each split.\n
                 If float, then consider max_samples like
-                    int(max_samples * n_samples) at each split
+                int(max_samples * n_samples) at each split
             min_samples_split (int or float): The minimum number of samples
-                required to split an internal node:
-                If int, then consider min_samples_split as the minimum number
+                required to split an internal node:\n
+                If int, then consider min_samples_split as the minimum number\n
                 If float, then consider ceil(min_samples_split * n_samples)
-                    as the minimum number
-            min_samples_leaf (int or float): The minimum number o samples
-                required to be a leaf:
-                If int, then consider min_samples_leaf as the minimum number
+                as the minimum number
+            min_samples_leaf (int or float): The minimum number of samples
+                required to be a leaf:\n
+                If int, then consider min_samples_leaf as the minimum number\n
                 If float, then consider ceil(min_samples_leaf * n_samples)
-                    as the minimum number
+                as the minimum number
             min_impurity_split (float): The minimum impurity required to split
                 a node.
             max_iterations (int): The maximum number of the iterations of LAHC
@@ -78,7 +79,7 @@ class SLSDT:
             multiple_increase (float): The percentage of the neighborhood
                 called "multiple_increase" in the LAHC heuristic. Adds n
                 random values  from the range [-1, 1) at n random positions
-                of the solution. Where n is in the range [1, n_features+1]
+                of the solution. Where n is in the range [1, n_features]
             swap (float): The percentage of the neighborhood called "swap"
                 in the LAHC heuristic. Swaps the value of two random positions.
             zero (float): The percentage of the neighborhood called "zero" in
@@ -110,11 +111,11 @@ class SLSDT:
         Build a oblique decision tree classifier from the training set (X, y)
 
         Arguments:
-            X {ndarray} -- The training input samples.
-            y {ndarray} -- The target values (class labels).
+            X (ndarray): The training input samples.
+            y (ndarray): The target values (class labels).
 
         Returns:
-            self (SLSDT): Fitted estimator.
+            self: Fitted estimator.
         """
 
         X, y = self.__check_X_y(X, y)
@@ -154,17 +155,45 @@ class SLSDT:
     def predict(self, X: np.ndarray) -> np.ndarray:
         """
         Predict class value for X
-        Predicted class for each sample in X is
+
+        Predicted class for each sample in X
 
         Args:
             X (ndarray): The imput samples to be predict
 
         Returns:
-            y_pred (ndarray): The predicted classes
+            ndarray: The predicted classes
         """
         return self.__classify(self.tree, X)
 
-    def get_params(self, deep=True):
+    def text_tree(self) -> None:
+        """Prints the tree in text format"""
+
+        self.__aux_text_tree(self.tree, 1)
+
+    def print_tree(self, features_names, target_names, filename="tree") -> Digraph:
+        """Prints the tree in image format
+
+        Args:
+            features_names (ndarray): Features names
+            target_names (ndarray): Unique class labels names
+            filename (str, optional): Output file name. Defaults to "tree".
+
+        Returns:
+            Digraph: [description]
+        """
+
+        g = Digraph(
+            "G",
+            format="png",
+            filename=filename,
+            node_attr={"shape": "box"},
+        )
+        self.__aux_print_tree(self.tree, g, features_names, target_names)
+        g.render()
+        return g
+
+    def get_params(self, deep=True) -> Dict:
         """
         Get parameters for this estimator
 
@@ -173,7 +202,7 @@ class SLSDT:
                 parameters for this estimator and contained subobjects that
                 are estimators.
         Returns:
-            params (dict): Parameter names mapped to their values.
+            dict: Parameter names mapped to their values.
         """
         return {
             "criterion": self.criterion,
@@ -191,7 +220,7 @@ class SLSDT:
             "reset": self.reset,
         }
 
-    def set_params(self, **parametes):
+    def set_params(self, **parametes) -> SLSDT:
         """
         Set params of this estimator
 
@@ -199,24 +228,12 @@ class SLSDT:
             **parameters (dict): Estimator parameters
 
         Returns:
-            self (SLSDT): Estimator instance
+            self: Estimator instance
         """
         for parameter, value in parametes.items():
             setattr(self, parameter, value)
 
         return self
-
-    def text_tree(self):
-        """Prints the tree in text format"""
-
-        self.__aux_text_tree(self.tree, 1)
-
-    def print_tree(self):
-        """Prints the tree in image format"""
-
-        g = Digraph("G", filename="artifacts_article/test.gv")
-        self.__aux_print_tree(self.tree, g)
-        g.view()
 
     @staticmethod
     def __check_X_y(X, y):
@@ -392,7 +409,9 @@ class SLSDT:
                 or np.sum(~split) <= self.min_samples_leaf
                 or cost < self.min_impurity_split
             ):
-                return Node(is_leaf=True, results=frequencies_y, error=error)
+                return Node(
+                    is_leaf=True, results=frequencies_y, error=error, samples=X.shape[0]
+                )
 
             left = self.__make_tree(X[split], y[split], depth + 1)
             right = self.__make_tree(X[~split], y[~split], depth + 1)
@@ -403,9 +422,13 @@ class SLSDT:
                 children_right=right,
                 results=frequencies_y,
                 error=error,
+                impurity=cost,
+                samples=X.shape[0],
             )
 
-        return Node(is_leaf=True, results=frequencies_y, error=error)
+        return Node(
+            is_leaf=True, results=frequencies_y, error=error, samples=X.shape[0]
+        )
 
     def __prune(self, tree):
         if tree.is_leaf:
@@ -451,17 +474,93 @@ class SLSDT:
         if node.children_right:
             self.__aux_text_tree(node.children_right, depth + 1)
 
-    def __aux_print_tree(self, node, g):
+    def __aux_print_tree(self, node, g, features_names, target_names):
         if not node.is_leaf:
+            aux = ""
+            for i in range(len(node.weights)):
+                if i == len(node.weights) - 1:
+                    aux += str(node.weights[i])
+                    aux += " > 0"
+                elif node.weights[i] != 0:
+                    aux += str(round(node.weights[i], 2))
+                    aux += str(features_names[i])
+                    aux += " + "
+
+            aux += r"\n"
+            aux += (
+                str("gain" if self.criterion == entropy else "gini")
+                + " = "
+                + str(np.round(node.impurity, 2))
+                + r"\n"
+            )
+            aux += "samples = " + str(node.samples) + r"\n"
+            aux += "values = " + str(node.results)
+
             if node.children_left:
                 if node.children_left.is_leaf:
-                    g.edge(str(node.weights), str(node.children_left.results))
+                    leaf_left = ""
+                    leaf_left += "samples = " + str(node.children_left.samples) + r"\n"
+                    leaf_left += "values = " + str(node.children_left.results) + r"\n"
+                    leaf_left += "class = " + str(
+                        target_names[np.argmax(node.children_left.results)]
+                    )
+                    g.edge(aux, leaf_left)
+
                 else:
-                    g.edge(str(node.weights), str(node.children_left.weights))
-                self.__aux_print_tree(node.children_left, g)
+                    aux1 = ""
+                    for i in range(len(node.children_left.weights)):
+                        if i == len(node.children_left.weights) - 1:
+                            aux1 += str(node.children_left.weights[i])
+                            aux1 += " > 0"
+                        else:
+                            aux1 += str(round(node.children_left.weights[i], 2))
+                            aux1 += str(features_names[i])
+                            aux1 += " + "
+                    aux1 += r"\n"
+                    aux1 += (
+                        str("gain" if self.criterion == entropy else "gini")
+                        + " = "
+                        + str(np.round(node.children_left.impurity, 2))
+                        + r"\n"
+                    )
+                    aux1 += "samples = " + str(node.children_left.samples) + r"\n"
+                    aux1 += "values = " + str(node.children_left.results)
+                    g.edge(aux, aux1)
+                self.__aux_print_tree(
+                    node.children_left, g, features_names, target_names
+                )
             if node.children_right:
                 if node.children_right.is_leaf:
-                    g.edge(str(node.weights), str(node.children_right.results))
+                    leaf_right = ""
+                    leaf_right += (
+                        "samples = " + str(node.children_right.samples) + r"\n"
+                    )
+                    leaf_right += "values = " + str(node.children_right.results) + r"\n"
+                    leaf_right += "class = " + str(
+                        target_names[np.argmax(node.children_right.results)]
+                    )
+                    g.edge(aux, leaf_right)
+
                 else:
-                    g.edge(str(node.weights), str(node.children_right.weights))
-                self.__aux_print_tree(node.children_right, g)
+                    aux2 = ""
+                    for i in range(len(node.children_right.weights)):
+                        if i == len(node.children_right.weights) - 1:
+                            aux2 += str(node.children_right.weights[i])
+                            aux2 += " > 0"
+                        else:
+                            aux2 += str(round(node.children_right.weights[i], 2))
+                            aux2 += str(features_names[i])
+                            aux2 += " + "
+                    aux2 += r"\n"
+                    aux2 += (
+                        str("gain" if self.criterion == entropy else "gini")
+                        + " = "
+                        + str(np.round(node.children_right.impurity, 2))
+                        + r"\n"
+                    )
+                    aux2 += "samples = " + str(node.children_right.samples) + r"\n"
+                    aux2 += "values = " + str(node.children_right.results)
+                    g.edge(aux, aux2)
+                self.__aux_print_tree(
+                    node.children_right, g, features_names, target_names
+                )

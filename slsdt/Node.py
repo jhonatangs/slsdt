@@ -10,6 +10,8 @@ class Node:
         children_left=None,
         children_right=None,
         error=-1,
+        impurity=None,
+        samples=None,
     ):
 
         self.weights = weights
@@ -18,3 +20,5 @@ class Node:
         self.children_left = children_left
         self.children_right = children_right
         self.error = error
+        self.impurity = impurity
+        self.samples = samples
