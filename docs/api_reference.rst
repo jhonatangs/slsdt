@@ -5,12 +5,16 @@ API Reference
 read_csv
 ========
 
-.. autofunction:: slsdt.read_csv
+.. automodule:: slsdt.reader_csv
+
+.. autofunction:: read_csv
 
 SLSDT
 =====
 
-.. autoclass:: slsdt.SLSDT
+.. automodule:: slsdt.slsdt
+
+.. autoclass:: SLSDT
 
    .. automethod:: __init__
    .. automethod:: fit
