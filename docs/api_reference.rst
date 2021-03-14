@@ -11,4 +11,11 @@ SLSDT
 =====
 
 .. autoclass:: slsdt.SLSDT
-    :members:
+
+   .. automethod:: __init__
+   .. automethod:: fit
+   .. automethod:: predict
+   .. automethod:: text_tree
+   .. automethod:: print_tree
+   .. automethod:: get_params
+   .. automethod:: set_params
