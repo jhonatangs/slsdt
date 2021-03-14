@@ -479,12 +479,19 @@ class SLSDT:
             aux = ""
             for i in range(len(node.weights)):
                 if i == len(node.weights) - 1:
-                    aux += str(node.weights[i])
+                    aux += str(abs(node.weights[i]))
                     aux += " > 0"
                 elif node.weights[i] != 0:
-                    aux += str(round(node.weights[i], 2))
+                    if node.weights[i] == -1:
+                        aux += "-"
+                    elif node.weights[i] != 1:
+                        aux += (
+                            str(abs(round(node.weights[i], 2)))
+                            if i != 0
+                            else str(round(node.weights[i], 2))
+                        )
                     aux += str(features_names[i])
-                    aux += " + "
+                    aux += " + " if node.weights[i + 1] > 0 else " - "
 
             aux += r"\n"
             aux += (
@@ -510,12 +517,23 @@ class SLSDT:
                     aux1 = ""
                     for i in range(len(node.children_left.weights)):
                         if i == len(node.children_left.weights) - 1:
-                            aux1 += str(node.children_left.weights[i])
+                            aux1 += str(abs(node.children_left.weights[i]))
                             aux1 += " > 0"
                         else:
-                            aux1 += str(round(node.children_left.weights[i], 2))
+                            if node.children_left.weights[i] == -1:
+                                aux1 += "-"
+                            elif node.children_left.weights[i] != 1:
+                                aux1 += str(
+                                    abs(round(node.children_left.weights[i], 2))
+                                    if i != 0
+                                    else str(round(node.children_left.weights[i], 2))
+                                )
                             aux1 += str(features_names[i])
-                            aux1 += " + "
+                            aux1 += (
+                                " + "
+                                if node.children_left.weights[i + 1] > 0
+                                else " - "
+                            )
                     aux1 += r"\n"
                     aux1 += (
                         str("gain" if self.criterion == entropy else "gini")
@@ -545,12 +563,23 @@ class SLSDT:
                     aux2 = ""
                     for i in range(len(node.children_right.weights)):
                         if i == len(node.children_right.weights) - 1:
-                            aux2 += str(node.children_right.weights[i])
+                            aux2 += str(abs(node.children_right.weights[i]))
                             aux2 += " > 0"
                         else:
-                            aux2 += str(round(node.children_right.weights[i], 2))
+                            if node.children_right.weights[i] == -1:
+                                aux2 += "-"
+                            elif node.children_right.weights[i] != 1:
+                                aux2 += (
+                                    str(abs(round(node.children_right.weights[i], 2)))
+                                    if i != 0
+                                    else str(round(node.children_right.weights[i], 2))
+                                )
                             aux2 += str(features_names[i])
-                            aux2 += " + "
+                            aux2 += (
+                                " + "
+                                if node.children_right.weights[i + 1] > 0
+                                else " - "
+                            )
                     aux2 += r"\n"
                     aux2 += (
                         str("gain" if self.criterion == entropy else "gini")
