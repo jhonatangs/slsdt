@@ -13,7 +13,7 @@ AUTHORS = "Souza, J.G. and Santos, H.G."
 REQUIRES_PYTHON = ">3.5.0"
 VERSION = "0.0.2"
 
-REQUIRED = ["numpy", "pandas", "numba", "scikit-learn"]
+REQUIRED = ["numpy", "pandas", "numba", "scikit-learn", "graphviz"]
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -86,7 +86,7 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    packages=find_packages(),
+    packages=find_packages(exclude=("tests",)),
     install_requires=REQUIRED,
     include_package_data=True,
     license="EPL-2.0",

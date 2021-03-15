@@ -34,6 +34,7 @@ release = ""
 extensions = [
     "sphinx.ext.autodoc",
     "sphinxcontrib.napoleon",
+    "sphinx_autodoc_typehints",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
 ]
@@ -75,7 +76,74 @@ pygments_style = None
 html_theme = "sphinx_rtd_theme"
 # html_theme = "flask"
 
+import sphinx_rtd_theme
+
+html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+
+
+# -- Options for HTMLHelp output ---------------------------------------------
+
+# Output file base name for HTML help builder.
+htmlhelp_basename = "slsdtdoc"
+
+
+# -- Options for LaTeX output ------------------------------------------------
+
+latex_elements = {}
+latex_documents = [
+    (
+        master_doc,
+        "slsdt.tex",
+        "Stochastic Local Search Decision Tree",
+        "Jhonatan G. Souza \\and Haroldo G. Santos",
+        "manual",
+    ),
+]
+
+
+# -- Options for manual page output ------------------------------------------
+
+# One entry per manual page. List of tuples
+# (source start file, name, description, authors, manual section).
+man_pages = [(master_doc, "slsdt", "SLSDT Documentation", [author], 1)]
+
+
+# -- Options for Texinfo output ----------------------------------------------
+
+# Grouping the document tree into Texinfo files. List of tuples
+# (source start file, target name, title, author,
+#  dir menu entry, description, category)
+texinfo_documents = [
+    (
+        master_doc,
+        "slsdt",
+        "SLSDT Documentation",
+        author,
+        "slsdt",
+        "Stochastic Local Search Decision Tree",
+        "Miscellaneous",
+    ),
+]
+
+
+# -- Options for Epub output -------------------------------------------------
+
+# Bibliographic Dublin Core info.
+epub_title = project
+
+# The unique identifier of the text. This can be a ISBN number
+# or the project homepage.
+#
+# epub_identifier = ''
+
+# A unique identification for the text.
+#
+# epub_uid = ''
+
+# A list of files that should not be packed into the epub file.
+epub_exclude_files = ["search.html"]
