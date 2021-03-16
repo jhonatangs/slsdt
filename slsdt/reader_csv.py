@@ -11,6 +11,8 @@ def read_csv(file: str, target: str, return_names: bool = False):
     Args:
         file (str): csv file path
         target (str): name of the column of the classification target in csv file.
+        return_names (bool, optional): if want return the names of features and
+        classes. Defaults to False.
 
     Returns:
         tuple: A tuple containing:\n
