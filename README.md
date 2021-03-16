@@ -10,7 +10,7 @@ Decision tree is a predictive modelling aproach used in machine learning, data m
 
 Our research, SLSDT, is a method for induction oblique decision trees using a stochastic local search method called Late Acceptance Hill-Climbing (LAHC) to try to find the best combination of features in each internal node.
 
-This project also provides a utility to read csv files and convert to the format accepted by the SLSDT method.
+This project also provides a utility to read csv files and convert to the format accepted by the SLSDT method. Moreover provides also a utility to load datasets included in the package
 
 ## How to use
 
@@ -28,7 +28,15 @@ from slsdt.reader_csv import read_csv
 X, y = read_csv("iris.csv", "class")
 ```
 
-3. slsdt
+3. load_dataset
+
+```python
+from slsdt.datasets import load_dataset
+
+X, y = load_dataset("iris")
+```
+
+4. slsdt
 
 ```python
 from slsdt.slsdt import SLSDT

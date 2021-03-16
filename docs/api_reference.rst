@@ -9,6 +9,13 @@ read_csv
 
 .. autofunction:: read_csv
 
+load_dataset
+========
+
+.. automodule:: slsdt.datasets
+
+.. autofunction:: load_dataset
+
 SLSDT
 =====
 
