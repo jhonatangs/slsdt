@@ -479,16 +479,10 @@ class SLSDT:
             aux = ""
             for i in range(len(node.weights)):
                 if i == len(node.weights) - 1:
-                    # aux += str(abs(node.weights[i]))
-                    # aux += " > 0"
                     aux += " > "
                     aux += str(abs(node.weights[i]))
                 elif node.weights[i] != 0:
-                    if (
-                        node.weights[i] == -1
-                        and i != len(node.weights) - 2
-                        and len(node.weights) - 2 >= 0
-                    ):
+                    if node.weights[i] == -1:
                         aux += "-"
                     elif node.weights[i] != 1:
                         aux += (
@@ -497,7 +491,7 @@ class SLSDT:
                             else str(round(node.weights[i], 2))
                         )
                     aux += str(features_names[i])
-                    if i != len(node.weights) - 2 and len(node.weights) - 2 >= 0:
+                    if node.weights[i + 1] != 0 and i + 1 != len(node.weights) - 1:
                         aux += " + " if node.weights[i + 1] > 0 else " - "
 
             aux += r"\n"
@@ -524,16 +518,10 @@ class SLSDT:
                     aux1 = ""
                     for i in range(len(node.children_left.weights)):
                         if i == len(node.children_left.weights) - 1:
-                            # aux1 += str(abs(node.children_left.weights[i]))
-                            # aux1 += " > 0"
                             aux1 += " > "
                             aux1 += str(abs(node.children_left.weights[i]))
                         else:
-                            if (
-                                node.children_left.weights[i] == -1
-                                and i != len(node.children_left.weights) - 2
-                                and len(node.children_left.weights) - 2 >= 0
-                            ):
+                            if node.children_left.weights[i] == -1:
                                 aux1 += "-"
                             elif node.children_left.weights[i] != 1:
                                 aux1 += str(
@@ -543,8 +531,8 @@ class SLSDT:
                                 )
                             aux1 += str(features_names[i])
                             if (
-                                i != len(node.children_left.weights) - 2
-                                and len(node.children_left.weights) - 2 >= 0
+                                node.children_left.weights[i + 1] != 0
+                                and i + 1 != len(node.children_left.weights) - 1
                             ):
                                 aux1 += (
                                     " + "
@@ -580,16 +568,10 @@ class SLSDT:
                     aux2 = ""
                     for i in range(len(node.children_right.weights)):
                         if i == len(node.children_right.weights) - 1:
-                            # aux2 += str(abs(node.children_right.weights[i]))
-                            # aux2 += " > 0"
                             aux2 += " > "
                             aux2 += str(abs(node.children_right.weights[i]))
                         else:
-                            if (
-                                node.children_right.weights[i] == -1
-                                and i != len(node.children_right.weights) - 2
-                                and len(node.children_right.weights) - 2 >= 0
-                            ):
+                            if node.children_right.weights[i] == -1:
                                 aux2 += "-"
                             elif node.children_right.weights[i] != 1:
                                 aux2 += (
@@ -599,8 +581,8 @@ class SLSDT:
                                 )
                             aux2 += str(features_names[i])
                             if (
-                                i != len(node.children_right.weights) - 2
-                                and len(node.children_right.weights) - 2 >= 0
+                                node.children_right.weights[i + 1] != 0
+                                and i + 1 != len(node.children_right.weights) - 1
                             ):
                                 aux2 += (
                                     " + "
