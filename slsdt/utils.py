@@ -133,7 +133,7 @@ def calc_penalty(weights):
 @njit
 def make_movement(weights, movement, seed, initial_weights):
     weights = weights.copy()
-    np.random.seed(seed)
+    # np.random.seed(seed)
 
     if movement == 1:
         column_modified = np.random.randint(weights.shape[0] - 1)
