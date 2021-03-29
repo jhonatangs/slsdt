@@ -14,6 +14,7 @@ from slsdt.utils import (
     entropy,
     gini,
     make_initial_weights,
+    make_movement,
 )
 from slsdt.Neighborhood import Neighborhood
 from slsdt.Node import Node
@@ -104,6 +105,7 @@ class SLSDT:
         self.swap = swap
         self.zero = zero
         self.reset = reset
+        self.seed = seed
         self.rng = np.random.default_rng(seed)
 
     def fit(self, X: np.ndarray, y: np.ndarray) -> SLSDT:
@@ -352,7 +354,9 @@ class SLSDT:
         iteration, v = 0, 0
 
         while iteration < self.max_iterations:
-            weights_neighbor = self.__make_movement(weights, self.__build_movement())
+            weights_neighbor = make_movement(
+                weights, self.__build_movement().value, self.seed, self.initial_weights
+            )
 
             cost_neighbor = (
                 calc_impurity(

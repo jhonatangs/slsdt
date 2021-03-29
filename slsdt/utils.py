@@ -128,3 +128,37 @@ def calc_impurity(X, y, weights, criterion, frequencies_y):
 @njit
 def calc_penalty(weights):
     return np.count_nonzero(weights) * 0.0001
+
+
+@njit
+def make_movement(weights, movement, seed, initial_weights):
+    weights = weights.copy()
+    np.random.seed(seed)
+
+    if movement == 1:
+        column_modified = np.random.randint(weights.shape[0] - 1)
+        value_increase = (1 - -1) * np.random.rand() + -1
+        weights[column_modified] += value_increase
+    elif movement == 2:
+        number_columns_modified = np.random.randint(1, weights.shape[0])
+
+        columns_modified = np.random.choice(
+            weights.shape[0] - 1, size=number_columns_modified, replace=False
+        )
+
+        for column_modified in columns_modified:
+            value_increase = (1 - -1) * np.random.rand() + -1
+            weights[column_modified] += value_increase
+    elif movement == 3:
+        column1, column2 = np.random.choice(weights.shape[0] - 1, size=2, replace=False)
+
+        weights[column1], weights[column2] = weights[column2], weights[column1]
+
+    elif movement == 4:
+        column_modified = np.random.randint(weights.shape[0] - 1)
+
+        weights[column_modified] = 0
+    elif movement == 5:
+        weights = initial_weights.copy()
+
+    return weights
