@@ -37,7 +37,7 @@ class SLSDT:
         min_impurity_split: float = 0.1,
         max_iterations: int = 500000,
         l: int = 20,
-        increase: float = 0.0,
+        increase: float = 0.1,
         multiple_increase: float = 0.75,
         swap: float = 0.1,
         zero: float = 0.1,
